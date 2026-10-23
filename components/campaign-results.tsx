@@ -1,4 +1,5 @@
 import type { MarketingResult } from "@/lib/marketing-schema";
+import { CopyButton } from "@/components/copy-button";
 
 type CampaignResultsProps = { result: MarketingResult };
 
@@ -28,6 +29,12 @@ export function CampaignResults({ result }: CampaignResultsProps) {
               <p className="generated-caption">{item.caption}</p>
               {item.hashtags.length > 0 && <p className="generated-hashtags">{item.hashtags.map((tag) => `#${tag.replace(/^#/, "")}`).join("  ")}</p>}
               <div className="generated-cta"><span>CALL TO ACTION</span><p>{item.callToAction}</p></div>
+              <CopyButton text={[
+                item.headline,
+                item.caption,
+                item.hashtags.length ? item.hashtags.map((tag) => `#${tag.replace(/^#/, "")}`).join(" ") : "",
+                `Call to action: ${item.callToAction}`,
+              ].filter(Boolean).join("\n\n")} />
             </article>
           ))}
         </div>

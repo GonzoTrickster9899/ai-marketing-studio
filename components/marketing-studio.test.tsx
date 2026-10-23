@@ -93,6 +93,7 @@ describe("MarketingStudio business brief", () => {
     render(<MarketingStudio />);
     fireEvent.click(screen.getByRole("button", { name: /Try sample business/ }));
     fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
+    fireEvent.submit(screen.getByLabelText(/Business name/).closest("form")!);
 
     expect(screen.getByRole("status").textContent).toContain("Creating your marketing campaign");
     expect(await screen.findAllByRole("heading", { name: "A weekend coffee treat" })).toHaveLength(2);
@@ -115,5 +116,44 @@ describe("MarketingStudio business brief", () => {
     expect((screen.getByLabelText(/Business name/) as HTMLInputElement).value).toBe("Daily Grind Coffee");
     expect(screen.getByRole("button", { name: /Try again/ })).toBeTruthy();
     expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("keeps previous results after a failed regeneration and replaces them after retry succeeds", async () => {
+    const revisedResult = {
+      ...generatedResult,
+      socialContent: generatedResult.socialContent.map((content) => ({ ...content, headline: "A fresh campaign idea" })),
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ result: generatedResult }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: { message: "The AI service is temporarily unavailable." } }), { status: 503 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ result: revisedResult }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<MarketingStudio />);
+    fireEvent.click(screen.getByRole("button", { name: /Try sample business/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
+    expect(await screen.findAllByRole("heading", { name: "A weekend coffee treat" })).toHaveLength(2);
+
+    fireEvent.change(screen.getByLabelText(/Business name/), { target: { value: "Updated Coffee Shop" } });
+    fireEvent.click(screen.getByRole("button", { name: /Regenerate Marketing Plan/ }));
+    expect(await screen.findByText("Showing your last successful campaign until this request succeeds.")).toBeTruthy();
+    expect(screen.getAllByRole("heading", { name: "A weekend coffee treat" })).toHaveLength(2);
+    expect((screen.getByLabelText(/Business name/) as HTMLInputElement).value).toBe("Updated Coffee Shop");
+
+    fireEvent.click(screen.getByRole("button", { name: /Try again/ }));
+    expect(await screen.findAllByRole("heading", { name: "A fresh campaign idea" })).toHaveLength(2);
+    expect(screen.queryByText("Showing your last successful campaign until this request succeeds.")).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("uses the retry-after delay in rate-limit feedback", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: { message: "Rate limited.", retryAfterSeconds: 23 },
+    }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "23" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<MarketingStudio />);
+    fireEvent.click(screen.getByRole("button", { name: /Try sample business/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
+
+    expect(await screen.findByText("Requests are temporarily limited. Wait about 23 seconds, then try again.")).toBeTruthy();
   });
 });

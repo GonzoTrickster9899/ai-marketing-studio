@@ -25,6 +25,7 @@ export function MarketingStudio() {
   const [generationError, setGenerationError] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const requestInFlight = useRef(false);
+  const businessNameRef = useRef<HTMLInputElement>(null);
   const offerRequired = brief.marketingGoal === "special_offer";
 
   function updateBrief<K extends keyof MarketingBriefFormState>(key: K, value: MarketingBriefFormState[K]) {
@@ -87,12 +88,18 @@ export function MarketingStudio() {
       });
       const payload: unknown = await response.json().catch(() => null);
       if (!response.ok) {
-        const errorMessage = payload && typeof payload === "object" && "error" in payload
-          && payload.error && typeof payload.error === "object" && "message" in payload.error
-          && typeof payload.error.message === "string" && payload.error.message.length <= 240
-          ? payload.error.message
-          : response.status === 429
-            ? "There are too many requests right now. Please wait a moment and try again."
+        const serverError = payload && typeof payload === "object" && "error" in payload
+          && payload.error && typeof payload.error === "object" ? payload.error : null;
+        const retryHeader = Number(response.headers.get("Retry-After"));
+        const payloadRetry = serverError && "retryAfterSeconds" in serverError && typeof serverError.retryAfterSeconds === "number"
+          ? serverError.retryAfterSeconds : 0;
+        const retryAfterSeconds = Number.isFinite(retryHeader) && retryHeader > 0 ? retryHeader : payloadRetry;
+        const errorMessage = response.status === 429
+          ? retryAfterSeconds > 0
+            ? `Requests are temporarily limited. Wait about ${retryAfterSeconds} seconds, then try again.`
+            : "Requests are temporarily limited. Please wait a moment, then try again."
+          : serverError && "message" in serverError && typeof serverError.message === "string" && serverError.message.length <= 240
+            ? serverError.message
             : "We couldn’t generate your campaign. Your business brief is safe. Please try again.";
         setGenerationError(errorMessage);
         return;
@@ -149,7 +156,7 @@ export function MarketingStudio() {
           <div className="field-grid">
             <div className="field" data-field="businessName">
               <label htmlFor="businessName">Business name <span className="required">*</span></label>
-              <input id="businessName" name="businessName" maxLength={120} placeholder="e.g. Daily Grind Coffee" value={brief.businessName} aria-invalid={Boolean(errors.businessName)} aria-describedby={errors.businessName ? "businessName-error" : undefined} onChange={(e) => updateBrief("businessName", e.target.value)} />
+              <input ref={businessNameRef} id="businessName" name="businessName" maxLength={120} placeholder="e.g. Daily Grind Coffee" value={brief.businessName} aria-invalid={Boolean(errors.businessName)} aria-describedby={errors.businessName ? "businessName-error" : undefined} onChange={(e) => updateBrief("businessName", e.target.value)} />
               {errors.businessName && <p className="field-error" id="businessName-error">{errors.businessName}</p>}
             </div>
             <div className="field" data-field="productOrService">
@@ -206,7 +213,7 @@ export function MarketingStudio() {
             </fieldset>
           </div>
 
-          <div className="privacy-note"><span aria-hidden="true">ⓘ</span><p>When you generate a plan, your brief will be sent to OpenAI and is not saved by this app. Don’t include confidential details or customer personal data.</p></div>
+          <div className="privacy-note"><span aria-hidden="true">ⓘ</span><p>When you generate a plan, your brief will be sent to OpenAI and is not saved by this app. Vercel Hobby terms may allow submitted content to be used for AI training. Don’t include confidential details or customer personal data.</p></div>
           <div className="form-actions">
             <button className="primary-button" type="submit" disabled={isGenerating} aria-busy={isGenerating}>
               {isGenerating ? <><span className="loading-spinner" aria-hidden="true" /> Creating your marketing campaign…</> : <>{generationError ? "Try again" : result ? "Regenerate Marketing Plan" : "Generate Marketing Plan"} <span aria-hidden="true">→</span></>}
@@ -221,8 +228,8 @@ export function MarketingStudio() {
             <div><h2>Your campaign</h2><p>Social content and a coordinated seven-day plan.</p></div>
           </div>
           {isGenerating && <div className="generation-status" role="status" aria-live="polite"><span className="loading-spinner" aria-hidden="true" /><div><strong>Creating your marketing campaign…</strong><p>Using your brief to prepare social content and a seven-day plan.</p></div></div>}
-          {generationError && <div className="generation-error" role="alert"><span className="error-icon" aria-hidden="true">!</span><div><strong>We couldn’t generate your campaign</strong><p>{generationError}</p></div></div>}
-          {generationError && result && <p className="previous-result-note">Showing your previous successful campaign while you retry.</p>}
+          {generationError && <div className="generation-error" role="alert"><span className="error-icon" aria-hidden="true">!</span><div><strong>We couldn’t generate your campaign</strong><p>{generationError}</p><div className="generation-error-actions"><button type="button" onClick={() => { businessNameRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); businessNameRef.current?.focus(); }}>Edit brief</button></div></div></div>}
+          {(generationError || isGenerating) && result && <p className="previous-result-note">Showing your last successful campaign until this request succeeds.</p>}
           {result ? <CampaignResults result={result} /> : !isGenerating && !generationError && <div className="empty-state">
             <div className="empty-illustration" aria-hidden="true"><span className="spark spark-one">✳</span><span className="doc-icon"><i /><i /><i /></span><span className="spark spark-two">✦</span></div>
             <span className="empty-kicker">YOUR RESULTS WILL APPEAR HERE</span>

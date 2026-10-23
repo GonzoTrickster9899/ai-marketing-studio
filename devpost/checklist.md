@@ -29,14 +29,14 @@ Build mode: learn
   Learner check: Exercised the result UI with a mocked generation response, including two tailored platform cards and seven campaign days. Confirmed the local API returns a safe `AI_NOT_CONFIGURED` response when no key is set; no real provider smoke generation was run because `OPENAI_API_KEY` is not configured.
   Commit: `Generate structured marketing campaigns`
 
-- [ ] **3. Copy, recover, and protect public generation**
+- [x] **3. Copy, recover, and protect public generation**
   Becomes usable: Users can copy captions, retry safely after failure, retain earlier results and brief values, and see the privacy notice; generation can be paused if public usage is unexpected.
   Why now: Once the core output exists, complete the PRD’s recovery and copy behavior and add the modest safeguards needed before a public demo.
   PRD ref: `prd.md > Editing, Regeneration, and Copying`, `Generation and Loading`, `States and Boundaries`, `What We're Building`
   Spec ref: `spec.md > Components > Clipboard and user feedback`, `Components > Abuse safeguard`, `Server Validation and Secret Handling`, `Failure Handling`, `Testing and Verification`, `Where It Runs and How Someone Tries It`
   Build: Add copy confirmation and clipboard fallback, failure UI with Retry/Edit, previous-result preservation and labeling, request de-duplication, the short privacy notice, mocked retry/error tests, and the `GENERATION_ENABLED` emergency switch. Document the Vercel WAF rule and environment setup for the later deployment step; the WAF setting itself is configured in Vercel during `6-ship`.
-  Verify (mechanical): Run `npm run lint`, `npm run test`, and `npm run build`; mocked client/route tests verify 429, disabled generation, failure preservation, successful replacement, copy success/failure, and no duplicate submit. Recheck ignored secret paths with `git check-ignore` and inspect `git status` before the slice commit.
-  Learner check: Copy a caption, simulate a failed regeneration after one success, confirm both the brief and old campaign remain, then retry successfully and confirm the result updates. Check the layout on a narrow mobile viewport.
+  Verify (mechanical): `npm run lint`, `npm test` (26 tests), and `npm run build` pass. Mocked client/route tests verify 429 guidance, disabled generation, failure preservation, successful replacement, clipboard success/fallback/failure, and duplicate-submit prevention. Rechecked that `.env.local` and the learner profile are ignored.
+  Learner check: Component tests exercised copy feedback/fallback and a failed regeneration that preserved both the brief and old campaign, followed by successful replacement. The local safe configuration response was checked in Slice 2. The full manual browser pass, real AI generation, mobile review, and Vercel WAF setup remain for hands-on review and shipping because no private API key is configured.
   Commit: `Add campaign recovery and copy safeguards`
 
 ## Hands-on Checkpoints
@@ -54,7 +54,7 @@ Build mode: learn
 - [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
 - [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: Slice 1 browser interaction checks and Slice 2 component/route/schema tests; lint and production build pass. A live OpenAI request remains unverified until a private key is configured locally.
+Activity and evidence: Slice 1 browser interaction checks; Slice 2 route/schema/UI tests; Slice 3 copy, retry, failure-preservation, and replacement tests. Lint, 26 tests, and production build pass. A live OpenAI request remains unverified until a private key is configured locally; final hands-on browser/mobile review is still pending.
 Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
 Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
 Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
