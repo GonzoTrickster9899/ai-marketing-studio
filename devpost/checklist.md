@@ -26,7 +26,7 @@ Build mode: learn
   Spec ref: `spec.md > The Core Journey Through the System`, `Components > Generation route and provider adapter`, `Components > Social content and campaign results`, `Data Model`, `API contract: POST /api/generate`, `OpenAI Request and Response`, `Server Validation and Secret Handling`, `External Services and Dependencies`
   Build: Add the shared brief/result schemas and sample data, server-only OpenAI Responses integration with `zodTextFormat`, the JSON route contract and safe error mapping, and result cards for `campaignSummary`, selected-platform social cards, and seven expandable campaign days. Add field/body limits and bounded model settings (`gpt-6-luna`, low reasoning, 5,000 output tokens). Keep the API key in `.env.local`; never request or commit it.
   Verify (mechanical): `npm run lint`, `npm test` (21 tests), and `npm run build` pass. Mocked tests cover route success, validation, exact seven-day output, selected-platform matching, OpenAI JSON Schema conversion, provider failures, generation UI, and preserved inputs after an error. The production dependency audit could not reach the npm advisory endpoint in this environment.
-  Learner check: Exercised the result UI with a mocked generation response, including two tailored platform cards and seven campaign days. Confirmed the local API returns a safe `AI_NOT_CONFIGURED` response when no key is set; no real provider smoke generation was run because `OPENAI_API_KEY` is not configured.
+  Learner check: Exercised the result UI with a mocked generation response, including two tailored platform cards and seven campaign days. The local API safely identified missing configuration. A later live smoke attempt reached OpenAI, but the provider rejected the configured credential, so no campaign was returned.
   Commit: `Generate structured marketing campaigns`
 
 - [x] **3. Copy, recover, and protect public generation**
@@ -36,7 +36,7 @@ Build mode: learn
   Spec ref: `spec.md > Components > Clipboard and user feedback`, `Components > Abuse safeguard`, `Server Validation and Secret Handling`, `Failure Handling`, `Testing and Verification`, `Where It Runs and How Someone Tries It`
   Build: Add copy confirmation and clipboard fallback, failure UI with Retry/Edit, previous-result preservation and labeling, request de-duplication, the short privacy notice, mocked retry/error tests, and the `GENERATION_ENABLED` emergency switch. Document the Vercel WAF rule and environment setup for the later deployment step; the WAF setting itself is configured in Vercel during `6-ship`.
   Verify (mechanical): `npm run lint`, `npm test` (26 tests), and `npm run build` pass. Mocked client/route tests verify 429 guidance, disabled generation, failure preservation, successful replacement, clipboard success/fallback/failure, and duplicate-submit prevention. Rechecked that `.env.local` and the learner profile are ignored.
-  Learner check: Component tests exercised copy feedback/fallback and a failed regeneration that preserved both the brief and old campaign, followed by successful replacement. The local safe configuration response was checked in Slice 2. The full manual browser pass, real AI generation, mobile review, and Vercel WAF setup remain for hands-on review and shipping because no private API key is configured.
+  Learner check: Component tests exercised copy feedback/fallback and a failed regeneration that preserved both the brief and old campaign, followed by successful replacement. The full manual browser pass, successful live generation, mobile review, and Vercel WAF setup remain for hands-on review and shipping; the configured credential was rejected by OpenAI.
   Commit: `Add campaign recovery and copy safeguards`
 
 ## Hands-on Checkpoints
@@ -54,7 +54,7 @@ Build mode: learn
 - [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
 - [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: Slice 1 browser interaction checks; Slice 2 route/schema/UI tests; Slice 3 copy, retry, failure-preservation, and replacement tests. Lint, 26 tests, and production build pass. A live OpenAI request remains unverified until a private key is configured locally; final hands-on browser/mobile review is still pending.
+Activity and evidence: Slice 1 browser interaction checks; Slice 2 route/schema/UI tests; Slice 3 copy, retry, failure-preservation, and replacement tests. Lint, 27 tests, and production build pass. One live request was attempted, but OpenAI rejected the configured credential; final hands-on browser/mobile review is still pending.
 Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
 Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
 Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]

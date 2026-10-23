@@ -23,6 +23,7 @@ export function MarketingStudio() {
   const [summary, setSummary] = useState("");
   const [result, setResult] = useState<MarketingResult | null>(null);
   const [generationError, setGenerationError] = useState("");
+  const [generationErrorCode, setGenerationErrorCode] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const requestInFlight = useRef(false);
   const businessNameRef = useRef<HTMLInputElement>(null);
@@ -78,6 +79,7 @@ export function MarketingStudio() {
     setErrors({});
     setSummary("");
     setGenerationError("");
+    setGenerationErrorCode("");
     requestInFlight.current = true;
     setIsGenerating(true);
     try {
@@ -90,6 +92,7 @@ export function MarketingStudio() {
       if (!response.ok) {
         const serverError = payload && typeof payload === "object" && "error" in payload
           && payload.error && typeof payload.error === "object" ? payload.error : null;
+        const errorCode = serverError && "code" in serverError && typeof serverError.code === "string" ? serverError.code : "";
         const retryHeader = Number(response.headers.get("Retry-After"));
         const payloadRetry = serverError && "retryAfterSeconds" in serverError && typeof serverError.retryAfterSeconds === "number"
           ? serverError.retryAfterSeconds : 0;
@@ -102,6 +105,7 @@ export function MarketingStudio() {
             ? serverError.message
             : "We couldn’t generate your campaign. Your business brief is safe. Please try again.";
         setGenerationError(errorMessage);
+        setGenerationErrorCode(errorCode);
         return;
       }
       try {
@@ -110,9 +114,11 @@ export function MarketingStudio() {
         setResult(nextResult);
       } catch {
         setGenerationError("The campaign response could not be processed. Your brief is safe. Please try again.");
+        setGenerationErrorCode("INVALID_AI_OUTPUT");
       }
     } catch {
       setGenerationError("We couldn’t connect to the AI service. Your business brief is safe. Please try again.");
+      setGenerationErrorCode("NETWORK_ERROR");
     } finally {
       requestInFlight.current = false;
       setIsGenerating(false);
@@ -216,7 +222,7 @@ export function MarketingStudio() {
           <div className="privacy-note"><span aria-hidden="true">ⓘ</span><p>When you generate a plan, your brief will be sent to OpenAI and is not saved by this app. Vercel Hobby terms may allow submitted content to be used for AI training. Don’t include confidential details or customer personal data.</p></div>
           <div className="form-actions">
             <button className="primary-button" type="submit" disabled={isGenerating} aria-busy={isGenerating}>
-              {isGenerating ? <><span className="loading-spinner" aria-hidden="true" /> Creating your marketing campaign…</> : <>{generationError ? "Try again" : result ? "Regenerate Marketing Plan" : "Generate Marketing Plan"} <span aria-hidden="true">→</span></>}
+              {isGenerating ? <><span className="loading-spinner" aria-hidden="true" /> Creating your marketing campaign…</> : <>{generationError ? generationErrorCode === "AI_NOT_CONFIGURED" && process.env.NODE_ENV === "development" ? "Try again after setup" : "Try again" : result ? "Regenerate Marketing Plan" : "Generate Marketing Plan"} <span aria-hidden="true">→</span></>}
             </button>
             <p className="action-note">{isGenerating ? "This usually takes a few seconds. Please keep this page open." : "You can edit everything before generating your plan."}</p>
           </div>
@@ -228,7 +234,7 @@ export function MarketingStudio() {
             <div><h2>Your campaign</h2><p>Social content and a coordinated seven-day plan.</p></div>
           </div>
           {isGenerating && <div className="generation-status" role="status" aria-live="polite"><span className="loading-spinner" aria-hidden="true" /><div><strong>Creating your marketing campaign…</strong><p>Using your brief to prepare social content and a seven-day plan.</p></div></div>}
-          {generationError && <div className="generation-error" role="alert"><span className="error-icon" aria-hidden="true">!</span><div><strong>We couldn’t generate your campaign</strong><p>{generationError}</p><div className="generation-error-actions"><button type="button" onClick={() => { businessNameRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); businessNameRef.current?.focus(); }}>Edit brief</button></div></div></div>}
+          {generationError && <div className="generation-error" role="alert"><span className="error-icon" aria-hidden="true">!</span><div><strong>{generationErrorCode === "AI_NOT_CONFIGURED" && process.env.NODE_ENV === "development" ? "AI setup is needed" : "We couldn’t generate your campaign"}</strong><p>{generationError}</p><div className="generation-error-actions"><button type="button" onClick={() => { businessNameRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); businessNameRef.current?.focus(); }}>Edit brief</button></div></div></div>}
           {(generationError || isGenerating) && result && <p className="previous-result-note">Showing your last successful campaign until this request succeeds.</p>}
           {result ? <CampaignResults result={result} /> : !isGenerating && !generationError && <div className="empty-state">
             <div className="empty-illustration" aria-hidden="true"><span className="spark spark-one">✳</span><span className="doc-icon"><i /><i /><i /></span><span className="spark spark-two">✦</span></div>

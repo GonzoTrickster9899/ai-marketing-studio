@@ -1,4 +1,4 @@
-import { GenerationError, errorPayload } from "@/lib/generation-error";
+import { aiConfigurationMessage, GenerationError, errorPayload } from "@/lib/generation-error";
 import { generateMarketingResult } from "@/lib/openai-marketing";
 import { marketingBriefSchema } from "@/lib/marketing-schema";
 
@@ -67,7 +67,8 @@ export async function POST(request: Request) {
       throw new GenerationError("GENERATION_DISABLED", 503, "Campaign generation is temporarily paused. Please try again later.");
     }
     if (!process.env.OPENAI_API_KEY) {
-      throw new GenerationError("AI_NOT_CONFIGURED", 503, "AI generation is not configured yet. Your brief is safe; try again later.");
+      console.error("[marketing-api] OPENAI_API_KEY is missing.");
+      throw new GenerationError("AI_NOT_CONFIGURED", 503, aiConfigurationMessage("missing"));
     }
 
     const result = await generateMarketingResult(briefResult.data);

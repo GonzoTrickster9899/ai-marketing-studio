@@ -23,6 +23,16 @@ export class GenerationError extends Error {
   }
 }
 
+export function aiConfigurationMessage(reason: "missing" | "rejected" = "missing") {
+  if (process.env.NODE_ENV === "production") {
+    return "AI generation is temporarily unavailable. Please try again later.";
+  }
+
+  return reason === "missing"
+    ? "AI generation needs setup. Add OPENAI_API_KEY to the project-root .env.local, restart the development server, then try again."
+    : "The AI service rejected its configuration. Check OPENAI_API_KEY in the project-root .env.local, restart the development server, then try again.";
+}
+
 export function errorPayload(error: GenerationError) {
   return {
     error: {

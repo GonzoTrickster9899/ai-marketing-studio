@@ -8,7 +8,7 @@ import {
   type MarketingBrief,
   type MarketingResult,
 } from "@/lib/marketing-schema";
-import { GenerationError } from "@/lib/generation-error";
+import { aiConfigurationMessage, GenerationError } from "@/lib/generation-error";
 
 const instructions = `You are a practical digital marketing assistant for small businesses. Create concise, ready-to-use marketing copy and one coordinated seven-day campaign from the supplied business brief.
 
@@ -40,7 +40,8 @@ function providerError(error: unknown): GenerationError {
     return new GenerationError("AI_UNAVAILABLE", 503, "The AI service is temporarily unavailable. Please try again.", true);
   }
   if (error instanceof APIError && (error.status === 401 || error.status === 403)) {
-    return new GenerationError("AI_NOT_CONFIGURED", 503, "AI generation is not available right now. Your brief is safe.");
+    console.error(`[marketing-api] OpenAI rejected the configured key (HTTP ${error.status}).`);
+    return new GenerationError("AI_NOT_CONFIGURED", 503, aiConfigurationMessage("rejected"));
   }
   if (error instanceof APIError && error.status !== undefined && error.status >= 500) {
     return new GenerationError("AI_UNAVAILABLE", 503, "The AI service is temporarily unavailable. Please try again.", true);
@@ -55,7 +56,8 @@ function containsRefusal(response: OpenAI.Responses.Response) {
 export async function generateMarketingResult(brief: MarketingBrief): Promise<MarketingResult> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new GenerationError("AI_NOT_CONFIGURED", 503, "AI generation is not configured yet. Your brief is safe; try again later.");
+    console.error("[marketing-api] OPENAI_API_KEY is missing.");
+    throw new GenerationError("AI_NOT_CONFIGURED", 503, aiConfigurationMessage("missing"));
   }
 
   const client = new OpenAI({ apiKey, maxRetries: 0, timeout: 20_000 });

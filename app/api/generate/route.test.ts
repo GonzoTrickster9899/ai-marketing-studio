@@ -46,6 +46,8 @@ describe("POST /api/generate", () => {
   afterEach(() => {
     delete process.env.OPENAI_API_KEY;
     delete process.env.GENERATION_ENABLED;
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
   it("returns a structured result for a valid brief", async () => {
@@ -69,11 +71,33 @@ describe("POST /api/generate", () => {
   });
 
   it("returns a safe configuration error when the key is missing", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
     delete process.env.OPENAI_API_KEY;
     const response = await POST(makeRequest({ brief: sampleBusiness }));
     expect(response.status).toBe(503);
-    expect(await response.json()).toMatchObject({ error: { code: "AI_NOT_CONFIGURED", retryable: false } });
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "AI_NOT_CONFIGURED",
+        retryable: false,
+        message: "AI generation needs setup. Add OPENAI_API_KEY to the project-root .env.local, restart the development server, then try again.",
+      },
+    });
+    expect(log).toHaveBeenCalledWith("[marketing-api] OPENAI_API_KEY is missing.");
     expect(mockGenerate).not.toHaveBeenCalled();
+  });
+
+  it("keeps missing-configuration messages generic in production", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.stubEnv("NODE_ENV", "production");
+    delete process.env.OPENAI_API_KEY;
+    const response = await POST(makeRequest({ brief: sampleBusiness }));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "AI_NOT_CONFIGURED",
+        message: "AI generation is temporarily unavailable. Please try again later.",
+      },
+    });
   });
 
   it("honors the emergency generation switch", async () => {
