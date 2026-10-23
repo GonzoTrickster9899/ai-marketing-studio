@@ -1,0 +1,28 @@
+# Private learner notes and local credentials
+/devpost/learner-profile.md
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.p12
+*.pfx
+*.key
+credentials.json
+credentials.*.json
+secrets.json
+secrets.*.json
+local.settings.json
+
+# Local tool/build output
+.next/
+node_modules/
+.vercel/
+coverage/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
