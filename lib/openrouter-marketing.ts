@@ -8,7 +8,7 @@ import {
   type MarketingBrief,
   type MarketingResult,
 } from "@/lib/marketing-schema";
-import { aiConfigurationMessage, GenerationError } from "@/lib/generation-error";
+import { aiConfigurationMessage, aiModelMessage, GenerationError } from "@/lib/generation-error";
 
 const instructions = `You are a practical digital marketing assistant for small businesses. Create concise, ready-to-use marketing copy and one coordinated seven-day campaign from the supplied business brief.
 
@@ -40,8 +40,16 @@ function providerError(error: unknown): GenerationError {
     return new GenerationError("AI_UNAVAILABLE", 503, "The AI service is temporarily unavailable. Please try again.", true);
   }
   if (error instanceof APIError && (error.status === 401 || error.status === 403)) {
-    console.error(`[marketing-api] OpenAI rejected the configured key (HTTP ${error.status}).`);
+    console.error(`[marketing-api] OpenRouter rejected the configured key (HTTP ${error.status}).`);
     return new GenerationError("AI_NOT_CONFIGURED", 503, aiConfigurationMessage("rejected"));
+  }
+  if (error instanceof APIError && error.status === 402) {
+    console.error("[marketing-api] OpenRouter could not process the request with the configured account (HTTP 402).");
+    return new GenerationError("AI_NOT_CONFIGURED", 503, aiModelMessage("billing"));
+  }
+  if (error instanceof APIError && (error.status === 400 || error.status === 404)) {
+    console.error(`[marketing-api] OpenRouter rejected the model request (HTTP ${error.status}).`);
+    return new GenerationError("AI_NOT_CONFIGURED", 503, aiModelMessage("unsupported"));
   }
   if (error instanceof APIError && error.status !== undefined && error.status >= 500) {
     return new GenerationError("AI_UNAVAILABLE", 503, "The AI service is temporarily unavailable. Please try again.", true);
@@ -54,19 +62,27 @@ function containsRefusal(response: OpenAI.Responses.Response) {
 }
 
 export async function generateMarketingResult(brief: MarketingBrief): Promise<MarketingResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    console.error("[marketing-api] OPENAI_API_KEY is missing.");
+    console.error("[marketing-api] OPENROUTER_API_KEY is missing.");
     throw new GenerationError("AI_NOT_CONFIGURED", 503, aiConfigurationMessage("missing"));
   }
 
-  const client = new OpenAI({ apiKey, maxRetries: 0, timeout: 20_000 });
+  const client = new OpenAI({
+    apiKey,
+    baseURL: "https://openrouter.ai/api/v1",
+    maxRetries: 0,
+    timeout: 20_000,
+    defaultHeaders: {
+      "X-OpenRouter-Title": "AI Marketing Studio",
+    },
+  });
   let response: OpenAI.Responses.ParsedResponse<MarketingResult>;
 
   for (let attempt = 0; ; attempt += 1) {
     try {
       response = await client.responses.parse({
-        model: process.env.OPENAI_MODEL ?? "gpt-6-luna",
+        model: process.env.OPENROUTER_MODEL ?? "openai/gpt-6-luna",
         reasoning: { effort: "low" },
         max_output_tokens: 5000,
         store: false,

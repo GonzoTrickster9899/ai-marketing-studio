@@ -219,7 +219,7 @@ export function MarketingStudio() {
             </fieldset>
           </div>
 
-          <div className="privacy-note"><span aria-hidden="true">ⓘ</span><p>When you generate a plan, your brief will be sent to OpenAI and is not saved by this app. Vercel Hobby terms may allow submitted content to be used for AI training. Don’t include confidential details or customer personal data.</p></div>
+          <div className="privacy-note"><span aria-hidden="true">ⓘ</span><p>When you generate a plan, your brief will be sent to OpenRouter and the selected AI model, and is not saved by this app. Vercel Hobby terms may allow submitted content to be used for AI training. Don’t include confidential details or customer personal data.</p></div>
           <div className="form-actions">
             <button className="primary-button" type="submit" disabled={isGenerating} aria-busy={isGenerating}>
               {isGenerating ? <><span className="loading-spinner" aria-hidden="true" /> Creating your marketing campaign…</> : <>{generationError ? generationErrorCode === "AI_NOT_CONFIGURED" && process.env.NODE_ENV === "development" ? "Try again after setup" : "Try again" : result ? "Regenerate Marketing Plan" : "Generate Marketing Plan"} <span aria-hidden="true">→</span></>}

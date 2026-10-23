@@ -1,5 +1,5 @@
 import { aiConfigurationMessage, GenerationError, errorPayload } from "@/lib/generation-error";
-import { generateMarketingResult } from "@/lib/openai-marketing";
+import { generateMarketingResult } from "@/lib/openrouter-marketing";
 import { marketingBriefSchema } from "@/lib/marketing-schema";
 
 const MAX_REQUEST_BYTES = 8 * 1024;
@@ -66,8 +66,8 @@ export async function POST(request: Request) {
     if (process.env.GENERATION_ENABLED?.toLowerCase() === "false") {
       throw new GenerationError("GENERATION_DISABLED", 503, "Campaign generation is temporarily paused. Please try again later.");
     }
-    if (!process.env.OPENAI_API_KEY) {
-      console.error("[marketing-api] OPENAI_API_KEY is missing.");
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error("[marketing-api] OPENROUTER_API_KEY is missing.");
       throw new GenerationError("AI_NOT_CONFIGURED", 503, aiConfigurationMessage("missing"));
     }
 

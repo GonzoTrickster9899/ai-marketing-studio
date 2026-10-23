@@ -3,9 +3,9 @@ import { GenerationError } from "@/lib/generation-error";
 import type { MarketingResult } from "@/lib/marketing-schema";
 import { sampleBusiness } from "@/lib/sample-business";
 import { POST } from "./route";
-import { generateMarketingResult } from "@/lib/openai-marketing";
+import { generateMarketingResult } from "@/lib/openrouter-marketing";
 
-vi.mock("@/lib/openai-marketing", () => ({ generateMarketingResult: vi.fn() }));
+vi.mock("@/lib/openrouter-marketing", () => ({ generateMarketingResult: vi.fn() }));
 
 const mockGenerate = vi.mocked(generateMarketingResult);
 
@@ -38,13 +38,13 @@ function makeRequest(body: unknown, headers: HeadersInit = { "content-type": "ap
 
 describe("POST /api/generate", () => {
   beforeEach(() => {
-    process.env.OPENAI_API_KEY = "test-key-only";
+    process.env.OPENROUTER_API_KEY = "test-key-only";
     process.env.GENERATION_ENABLED = "true";
     mockGenerate.mockReset();
   });
 
   afterEach(() => {
-    delete process.env.OPENAI_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
     delete process.env.GENERATION_ENABLED;
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
@@ -72,24 +72,24 @@ describe("POST /api/generate", () => {
 
   it("returns a safe configuration error when the key is missing", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    delete process.env.OPENAI_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
     const response = await POST(makeRequest({ brief: sampleBusiness }));
     expect(response.status).toBe(503);
     expect(await response.json()).toMatchObject({
       error: {
         code: "AI_NOT_CONFIGURED",
         retryable: false,
-        message: "AI generation needs setup. Add OPENAI_API_KEY to the project-root .env.local, restart the development server, then try again.",
+        message: "AI generation needs setup. Add OPENROUTER_API_KEY to the project-root .env.local, restart the development server, then try again.",
       },
     });
-    expect(log).toHaveBeenCalledWith("[marketing-api] OPENAI_API_KEY is missing.");
+    expect(log).toHaveBeenCalledWith("[marketing-api] OPENROUTER_API_KEY is missing.");
     expect(mockGenerate).not.toHaveBeenCalled();
   });
 
   it("keeps missing-configuration messages generic in production", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     vi.stubEnv("NODE_ENV", "production");
-    delete process.env.OPENAI_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
     const response = await POST(makeRequest({ brief: sampleBusiness }));
     expect(response.status).toBe(503);
     expect(await response.json()).toMatchObject({

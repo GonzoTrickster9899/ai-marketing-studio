@@ -7,9 +7,9 @@ status: approved
 
 ## How This Works, In Plain Language
 
-The browser shows the business form and keeps the current brief and results in memory. A short privacy note explains that the brief is sent to OpenAI for generation, is not saved by this app, and should not include confidential information or customer personal data. When the user generates a plan, the browser sends the brief to a small server route in this Next.js app. That route checks the brief, adds the private OpenAI key, asks GPT-6 Luna for one response in a fixed shape, checks that response, and sends only safe, structured results back to the browser. The browser displays the two platform cards and seven campaign days.
+The browser shows the business form and keeps the current brief and results in memory. A short privacy note explains that the brief is sent to OpenRouter and the selected upstream model for generation, is not saved by this app, and should not include confidential information or customer personal data. When the user generates a plan, the browser sends the brief to a small server route in this Next.js app. That route checks the brief, adds the private OpenRouter key, asks the configured model (default `openai/gpt-6-luna`) for one response in a fixed shape, checks that response, and sends only safe, structured results back to the browser. The browser displays the two platform cards and seven campaign days.
 
-There is no account, database, or separate backend to configure. Refreshing the page clears the brief and results. That keeps the prototype small; the tradeoff is that campaigns are not saved. The OpenAI key stays on the server and is never sent to the browser.
+There is no account, database, or separate backend to configure. Refreshing the page clears the brief and results. That keeps the prototype small; the tradeoff is that campaigns are not saved. The OpenRouter key stays on the server and is never sent to the browser.
 
 ## The Core Journey Through the System
 
@@ -18,7 +18,7 @@ Implements `prd.md > The Core Journey`.
 1. The browser loads the workspace, blank form, sample-business action, and empty results panel.
 2. The user fills in or sample-loads the brief. The browser validates required fields and shows inline errors without sending a request when anything is missing.
 3. On a valid submit, the browser disables the button and shows “Creating your marketing campaign…”. It sends `POST /api/generate` with the brief.
-4. The Next.js route validates the JSON again, checks request size and server configuration, then calls OpenAI’s Responses API with the GPT-6 Luna model and strict structured output.
+4. The Next.js route validates the JSON again, checks request size and server configuration, then calls OpenRouter’s Responses API with the GPT-6 Luna model and strict structured output.
 5. The route verifies the response is complete, not a refusal, and matches the app’s Zod output schema, including exactly seven plan days and only the selected platforms. It returns JSON to the browser.
 6. The browser replaces results only after a valid successful response. Copy actions use the Clipboard API. Editing and regenerating uses the updated brief.
 7. If a request fails, the form and previous successful result remain in browser memory. The UI shows a plain-language error and Retry/Edit actions.
@@ -28,7 +28,7 @@ flowchart LR
   U[Business brief in browser] --> V[Client validation]
   V -->|valid POST| R[Next.js /api/generate]
   R --> S[Server validation and limits]
-  S --> O[OpenAI Responses API<br/>GPT-6 Luna + JSON Schema]
+  S --> O[OpenRouter Responses API<br/>GPT-6 Luna + JSON Schema]
   O --> P[Zod output check]
   P -->|valid JSON| UI[Results cards and 7-day plan]
   P -->|failure| E[Safe error response]
@@ -42,8 +42,8 @@ flowchart LR
 | App framework | Next.js App Router + TypeScript | Familiar to the learner; one app can serve the UI and a server-side API route. [Next.js](https://nextjs.org/docs/app) |
 | UI styling | Tailwind CSS + shadcn/ui | Matches the preferred stack and supports a small, editable set of accessible UI components. [Tailwind with Next.js](https://tailwindcss.com/docs/installation/framework-guides/nextjs), [shadcn/ui for Next.js](https://ui.shadcn.com/docs/installation/next) |
 | Input and output validation | Zod | Use the same typed schemas to validate browser requests, provider output, and tests. [Zod](https://zod.dev/) |
-| AI client | OpenAI Node.js SDK, Responses API, Structured Outputs | One server-side request produces UI-ready JSON instead of fragile free-form parsing. Use the Responses parsing helper with `zodTextFormat`. [OpenAI JavaScript SDK](https://github.com/openai/openai-node), [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses) |
-| Model | `gpt-6-luna` | The learner selected it as the cost-conscious starting model. The current OpenAI model page lists Responses API and Structured Outputs support. Model pricing and availability can change; check the page before deployment. [GPT-6 Luna model page](https://developers.openai.com/api/docs/models/gpt-6-luna) |
+| AI client | OpenAI Node.js SDK pointed at OpenRouter's Responses API | One server-side request produces UI-ready JSON instead of fragile free-form parsing. Use the Responses parsing helper with `zodTextFormat`. [OpenRouter OpenAI SDK setup](https://openrouter.ai/docs/community/frameworks), [Structured Outputs](https://openrouter.ai/docs/guides/features/structured-outputs) |
+| Model | `openai/gpt-6-luna` | The learner selected it as the starting model. It is configurable with `OPENROUTER_MODEL`; `recursive/flint-v1.0:free` and `openrouter/free` are also supported options. Model availability and structured-output behavior can change, so validate the response server-side. [GPT-6 Luna on OpenRouter](https://openrouter.ai/openai/gpt-6-luna), [Flint on OpenRouter](https://openrouter.ai/recursive/flint-v1.0%3Afree), [Free model router](https://openrouter.ai/openrouter/free) |
 | Tests | Vitest + mocked provider calls, focused browser checks | Most repeatable tests avoid API charges; a small real API smoke check confirms key/model/schema setup. [Vitest](https://vitest.dev/), [Next.js testing guide](https://nextjs.org/docs/app/guides/testing) |
 | Hosting | Vercel | The user wants a public app URL; deploy after local verification. [Vercel deployment](https://vercel.com/docs/deployments) |
 
@@ -53,9 +53,9 @@ The exact package versions will be those resolved by the current Next.js starter
 
 - **Local development:** Node.js 20.9+, npm, and a terminal on the learner’s computer.
 - **Install and run:** `npm install`, then `npm run dev`; open `http://localhost:3000`.
-- **Live AI generation:** Set `OPENAI_API_KEY` in a root `.env.local` file. Do not prefix it with `NEXT_PUBLIC_`. Keep `.env.local` out of Git. Add `.env.example` with variable names and placeholders only, including `OPENAI_MODEL=gpt-6-luna` and `GENERATION_ENABLED=true`.
+- **Live AI generation:** Set `OPENROUTER_API_KEY` in a root `.env.local` file. Do not prefix it with `NEXT_PUBLIC_`. Keep `.env.local` out of Git. Add `.env.example` with variable names and placeholders only, including `OPENROUTER_MODEL=openai/gpt-6-luna` and `GENERATION_ENABLED=true`.
 - **Test without spending API credits:** `npm run test` runs Vitest with mocked provider responses. The app itself still requires a key for live generation; missing configuration produces a helpful service-unavailable error.
-- **Deploy:** Import the public GitHub repository through Vercel’s web interface, set `OPENAI_API_KEY` in the project’s server-side environment variables, deploy, then run a real generation against the public URL. Configure and publish the WAF rule described under **Abuse safeguard** below.
+- **Deploy:** Import the public GitHub repository through Vercel’s web interface, set `OPENROUTER_API_KEY` in the project’s server-side environment variables, deploy, then run a real generation against the public URL. Configure and publish the WAF rule described under **Abuse safeguard** below.
 - **Demo and submission:** The chosen public live URL complements the public repository and demo video; it does not replace the required short video or repository. The learner reports the hackathon expects an open-source license and a public demo video under three minutes. Verify the current event instructions during `6-ship`. Vercel Hobby is for personal or non-commercial use under its current terms; this hackathon prototype is planned as a non-commercial demo. The current terms also say Vercel may use Hobby-submitted content for model training, so use non-sensitive demo briefs and recheck plan/privacy terms before real business use. [Vercel terms](https://vercel.com/legal/terms)
 
 ## Look and Feel
@@ -66,7 +66,7 @@ Carry forward `prd.md > Look and Feel`: a light, modern, approachable SaaS works
 
 ### Marketing Studio page and brief form
 
-`app/page.tsx` composes the client-side workspace. `components/marketing-studio.tsx` owns the brief, validation errors, loading flag, last successful result, and request error. It starts blank, loads the sample only when clicked, validates before submitting, and retains inputs/results across a failed request. It prevents duplicate submissions while loading. Show this privacy note near the form: “Your brief is sent to OpenAI to generate content and is not saved by this app. Don’t enter confidential information or customer personal data.” For a Vercel Hobby deployment, add that the current hosting terms may allow submitted content to be used for model training. Implements `prd.md > Screens and Layout`, `Business Brief Form`, `Generation and Loading`, and `States and Boundaries`.
+`app/page.tsx` composes the client-side workspace. `components/marketing-studio.tsx` owns the brief, validation errors, loading flag, last successful result, and request error. It starts blank, loads the sample only when clicked, validates before submitting, and retains inputs/results across a failed request. It prevents duplicate submissions while loading. Show this privacy note near the form: “Your brief is sent to OpenRouter to generate content and is not saved by this app. Don’t enter confidential information or customer personal data.” For a Vercel Hobby deployment, add that the current hosting terms may allow submitted content to be used for model training. Implements `prd.md > Screens and Layout`, `Business Brief Form`, `Generation and Loading`, and `States and Boundaries`.
 
 ### Validation and sample data
 
@@ -74,7 +74,7 @@ Carry forward `prd.md > Look and Feel`: a light, modern, approachable SaaS works
 
 ### Generation route and provider adapter
 
-`app/api/generate/route.ts` accepts `POST` only. It parses a JSON brief, validates with Zod, checks `OPENAI_API_KEY` and `GENERATION_ENABLED`, calls `lib/openai-marketing.ts`, validates the returned object, and returns a normalized JSON result or safe error. `GENERATION_ENABLED=false` disables generation at the application level and is the emergency switch if public traffic or usage is unexpected; redeploy after changing the Vercel environment setting. Monitor provider usage in the OpenAI dashboard because the IP rule is not a global spend cap. `lib/openai-marketing.ts` is the only module that imports the OpenAI SDK and reads the secret. It uses `OPENAI_MODEL` if supplied, otherwise `gpt-6-luna`; set the model server-side and never from a browser request. The prompt treats the business brief as data, asks for truthful promotional writing, and prohibits inventing prices, inventory, locations, guarantees, business facts, or measured outcomes. It must reflect the provided audience, goal, tone, and promotion accurately. Implements `prd.md > Social Content`, `Seven-Day Campaign Plan`, `Generation and Loading`, and `States and Boundaries`.
+`app/api/generate/route.ts` accepts `POST` only. It parses a JSON brief, validates with Zod, checks `OPENROUTER_API_KEY` and `GENERATION_ENABLED`, calls `lib/openrouter-marketing.ts`, validates the returned object, and returns a normalized JSON result or safe error. `GENERATION_ENABLED=false` disables generation at the application level and is the emergency switch if public traffic or usage is unexpected; redeploy after changing the Vercel environment setting. Monitor provider usage in the OpenRouter dashboard because the IP rule is not a global spend cap. `lib/openrouter-marketing.ts` is the only module that imports the OpenAI-compatible SDK and reads the secret. It sends requests to `https://openrouter.ai/api/v1` and uses `OPENROUTER_MODEL` if supplied, otherwise `openai/gpt-6-luna`; `recursive/flint-v1.0:free` and `openrouter/free` are alternative values. Set the model server-side and never from a browser request. The prompt treats the business brief as data, asks for truthful promotional writing, and prohibits inventing prices, inventory, locations, guarantees, business facts, or measured outcomes. It must reflect the provided audience, goal, tone, and promotion accurately. Implements `prd.md > Social Content`, `Seven-Day Campaign Plan`, `Generation and Loading`, and `States and Boundaries`.
 
 ### Social content and campaign results
 
@@ -132,7 +132,7 @@ type MarketingResult = {
 };
 ```
 
-All fields in `MarketingResult` are required. The `offer` field is optional in `MarketingBrief`, except when the user selects `special_offer`. The `hashtags` array may be empty. The Zod output schema is also supplied to OpenAI Structured Outputs as a strict JSON Schema with a seven-item `campaignPlan`. Server-side checks confirm ascending day order and exact platform sets matching the brief because schema shape alone does not enforce those cross-field business rules. Structured Outputs guarantees supported schema adherence, not that advice is factual or effective. [Structured Outputs guide](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses)
+All fields in `MarketingResult` are required. The `offer` field is optional in `MarketingBrief`, except when the user selects `special_offer`. The `hashtags` array may be empty. The Zod output schema is also supplied to OpenRouter Structured Outputs as a strict JSON Schema with a seven-item `campaignPlan`. Server-side checks confirm ascending day order and exact platform sets matching the brief because schema shape alone does not enforce those cross-field business rules. Structured Outputs guarantees supported schema adherence, not that advice is factual or effective. [Structured Outputs guide](https://openrouter.ai/docs/guides/features/structured-outputs)
 
 ### API contract: `POST /api/generate`
 
@@ -156,21 +156,21 @@ Success (`200`): `{ "result": MarketingResult }`.
 
 Failure (`4xx`/`5xx`): `{ "error": { "code": string, "message": string, "retryable": boolean } }`. Codes: `INVALID_REQUEST` (`400`), `RATE_LIMITED` (`429`), `AI_NOT_CONFIGURED` or `GENERATION_DISABLED` (`503`), `AI_REFUSED` (`422`), `AI_INCOMPLETE` or `INVALID_AI_OUTPUT` (`502`), `AI_UNAVAILABLE` (`503`), `AI_TIMEOUT` (`504`), and `INTERNAL_ERROR` (`500`). Messages are written for users, contain no keys, raw provider payload, or stack trace. Preserve an upstream retry delay when available; otherwise give a general wait-and-retry message.
 
-## OpenAI Request and Response
+## OpenRouter Request and Response
 
-The server calls `POST https://api.openai.com/v1/responses` using the OpenAI Node SDK’s Responses parsing helper with `zodTextFormat(MarketingResultSchema, "marketing_result")`, `model: process.env.OPENAI_MODEL ?? "gpt-6-luna"`, `reasoning: { effort: "low" }`, `max_output_tokens: 5000`, instructions, and the validated brief. Treat 5,000 output tokens and low reasoning effort as starting values to check during the first real generation. Consume `response.output_parsed`; do not parse a free-form answer yourself. Require a completed response and non-null parsed output. Handle refusal and incomplete status separately. Do not enable tools or send data to the browser-side OpenAI SDK. OpenAI documents Structured Outputs for response formats as the appropriate choice when the model should return structured UI data. [Responses Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses), [Responses API reference](https://developers.openai.com/api/reference/resources/responses/methods/create)
+The server calls `POST https://openrouter.ai/api/v1/responses` using the OpenAI Node SDK's Responses parsing helper with `zodTextFormat(MarketingResultSchema, "marketing_result")`, `model: process.env.OPENROUTER_MODEL ?? "openai/gpt-6-luna"`, `reasoning: { effort: "low" }`, `max_output_tokens: 5000`, `store: false`, instructions, and the validated brief. Treat 5,000 output tokens and low reasoning effort as starting values to check during the first real generation. Consume `response.output_parsed`; do not parse a free-form answer yourself. Require a completed response and non-null parsed output. Handle refusal and incomplete status separately. Do not enable tools or send data to browser code. OpenRouter provides an OpenAI-compatible endpoint and documents Responses Structured Outputs. Server-side Zod validation remains required, especially when changing models. [OpenRouter Responses API](https://openrouter.ai/docs/api/api-reference/responses/create-responses), [Structured Outputs](https://openrouter.ai/docs/guides/features/structured-outputs), [SDK setup](https://openrouter.ai/docs/community/frameworks)
 
 **Retry policy:** Set SDK automatic retries to zero so retry ownership is explicit. The route may retry once for a transient network/timeout or provider 5xx; it does not automatically retry a 429, refusal, missing key, or invalid/incomplete output. The UI’s manual Retry reuses the preserved brief. A timed-out upstream call may have completed remotely, so the bounded automatic retry can still incur a duplicate charge; never retry in a loop. Keep a bounded output token limit appropriate to the seven-day result and check the live sample during the first real smoke test.
 
 ## Server Validation and Secret Handling
 
 - Validate the same brief in the browser for immediate inline guidance and again in the server route because browser requests are untrusted.
-- Enforce allowed enums, at least one unique supported platform, required strings, the special-offer conditional, character limits, JSON content type, and 8 KB body cap before calling OpenAI.
+- Enforce allowed enums, at least one unique supported platform, required strings, the special-offer conditional, character limits, JSON content type, and 8 KB body cap before calling OpenRouter.
 - Validate the structured response with Zod after parsing and enforce exactly seven ordered days, one social item per selected platform, and one daily caption per selected platform.
-- Read `OPENAI_API_KEY` only in the provider module on the server. `.env.local` is ignored by Git; `.env.example` contains placeholders only. Never use a `NEXT_PUBLIC_` secret or log prompts/results/provider bodies.
+- Read `OPENROUTER_API_KEY` only in the provider module on the server. `.env.local` is ignored by Git; `.env.example` contains placeholders only. Never use a `NEXT_PUBLIC_` secret or log prompts/results/provider bodies.
 - Keep form and generated result only in React memory; no localStorage or database. On refresh, they reset. A failed request never clears current inputs or a previous successful result.
-- Limit output generation to one in-flight client request. The WAF is one protection layer, not a global spending cap: multiple IPs can each generate requests and users behind one IP count together. Monitor OpenAI usage and retain an application kill switch: set `GENERATION_ENABLED=false` in the server environment and redeploy to disable generation if usage is unexpected. Local development has no shared rate-limit store.
-- Show a short privacy note near the form explaining that brief data is sent to OpenAI, is not saved by this app, and should not include confidential information or customer personal data. On Vercel Hobby, include the hosting terms warning about possible model training on submitted content; use non-sensitive demo inputs and recheck terms before production use.
+- Limit output generation to one in-flight client request. The WAF is one protection layer, not a global spending cap: multiple IPs can each generate requests and users behind one IP count together. Monitor OpenRouter usage and retain an application kill switch: set `GENERATION_ENABLED=false` in the server environment and redeploy to disable generation if usage is unexpected. Local development has no shared rate-limit store.
+- Show a short privacy note near the form explaining that brief data is sent to OpenRouter, is not saved by this app, and should not include confidential information or customer personal data. On Vercel Hobby, include the hosting terms warning about possible model training on submitted content; use non-sensitive demo inputs and recheck terms before production use.
 
 ## Failure Handling
 
@@ -217,7 +217,7 @@ learn-ai-basics/
 ├── lib/
 │   ├── marketing-schema.ts       # brief and strict output Zod schemas/types
 │   ├── sample-business.ts        # explicit demo example data
-│   ├── openai-marketing.ts       # server-only SDK call and prompt
+│   ├── openrouter-marketing.ts   # server-only SDK call and prompt
 │   └── utils.ts                  # shadcn utility helper if generated
 ├── tests/
 │   ├── marketing-schema.test.ts  # input/output and cross-field rules
@@ -240,20 +240,21 @@ learn-ai-basics/
 
 ## External Services and Dependencies
 
-### OpenAI API
+### OpenRouter API
 
 - **Call:** Responses API `POST /v1/responses`; one generation call per valid submission, with at most one server retry for transient failures.
-- **Authentication:** `OPENAI_API_KEY` on the server only.
-- **Model:** `gpt-6-luna` starting default, configurable server-side through `OPENAI_MODEL`.
+- **Authentication:** `OPENROUTER_API_KEY` on the server only.
+- **Endpoint:** `https://openrouter.ai/api/v1/responses` through the OpenAI-compatible Node SDK.
+- **Model:** `openai/gpt-6-luna` starting default, configurable server-side through `OPENROUTER_MODEL`; alternatives are `recursive/flint-v1.0:free` and `openrouter/free`.
 - **Payload:** validated brief in the prompt; strict JSON Schema format for `MarketingResult`; bounded output tokens.
 - **Response:** completed response with parsed `MarketingResult`, or refusal/incomplete/error mapped to the API contract above.
-- **Cost:** token-based. The currently published model page lists $0.10 per million input tokens and $0.50 per million output tokens at standard rates; confirm current rates before a public launch. [Model pricing](https://developers.openai.com/api/docs/models/gpt-6-luna)
-- **Data path:** user-entered business details are sent to OpenAI for generation. This prototype does not save those details itself.
+- **Cost:** token-based and depends on the selected model; both named `:free` options are currently listed as free. Check current model pricing and limits before a public launch. [GPT-6 Luna on OpenRouter](https://openrouter.ai/openai/gpt-6-luna), [Flint free model](https://openrouter.ai/recursive/flint-v1.0%3Afree), [Free model router](https://openrouter.ai/openrouter/free)
+- **Data path:** user-entered business details are sent to OpenRouter and the selected upstream model for generation. This prototype does not save those details itself.
 
 ### Vercel
 
 - Hosts the Next.js app and server route.
-- Holds `OPENAI_API_KEY` as a server-side project environment variable.
+- Holds `OPENROUTER_API_KEY` as a server-side project environment variable.
 - Provides the public URL and the configured WAF request rule. Current Vercel terms limit Hobby to personal/non-commercial use; current WAF rate-limit pricing/limits are linked above and should be checked in the project dashboard before applying the rule.
 
 No database, authentication service, analytics provider, social network API, or separate backend is used in the MVP.
@@ -268,7 +269,7 @@ No database, authentication service, analytics provider, social network API, or 
 
 ## Decisions and Open Issues
 
-- **Learner decisions:** Next.js/TypeScript, Tailwind/shadcn, OpenAI Responses API + Structured Outputs, GPT-6 Luna, no database/auth, Vitest and manual verification, local-first build, and a public Vercel demo. The public repo must have an open-source license and the video must be public and under three minutes per the learner’s hackathon guidance; confirm exact event rules during `6-ship`.
+- **Learner decisions:** Next.js/TypeScript, Tailwind/shadcn, OpenRouter Responses API + Structured Outputs, GPT-6 Luna, no database/auth, Vitest and manual verification, local-first build, and a public Vercel demo. The public repo must have an open-source license and the video must be public and under three minutes per the learner’s hackathon guidance; confirm exact event rules during `6-ship`.
 - **Implementation details derived from those choices:** same Zod schemas at the browser/server boundary; one route; 8 KB request cap and field caps; strict output schema; safe normalized errors; one explicit server retry maximum; WAF fixed-window 10 requests/IP/10 minutes for `POST /api/generate` as the initial public-demo rule.
-- **Useful unknown:** No separate technical concept was identified as uncertain during this spec discussion. The first build should still trace one parsed OpenAI result through the Zod schema into the UI, since seeing that connection supports the learner’s stated goal of understanding how specs become code.
+- **Useful unknown:** No separate technical concept was identified as uncertain during this spec discussion. The first live generation should still trace one parsed OpenRouter result through the Zod schema into the UI, since seeing that connection supports the learner’s stated goal of understanding how specs become code.
 - **Open:** No architecture decision remains open. Confirm current package/model and Vercel plan/rate-limit pricing during setup/deployment because these can change. No live API key is needed in the spec or chat.

@@ -124,7 +124,7 @@ describe("MarketingStudio business brief", () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       error: {
         code: "AI_NOT_CONFIGURED",
-        message: "AI generation needs setup. Add OPENAI_API_KEY to the project-root .env.local, restart the development server, then try again.",
+        message: "AI generation needs setup. Add OPENROUTER_API_KEY to the project-root .env.local, restart the development server, then try again.",
         retryable: false,
       },
     }), { status: 503, headers: { "Content-Type": "application/json" } }));
