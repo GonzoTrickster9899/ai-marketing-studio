@@ -91,14 +91,20 @@ describe("MarketingStudio business brief", () => {
       headers: { "Content-Type": "application/json" },
     }));
     vi.stubGlobal("fetch", fetchMock);
-    render(<MarketingStudio />);
+    const { container } = render(<MarketingStudio />);
     fireEvent.click(screen.getByRole("button", { name: /Try sample business/ }));
     fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
     fireEvent.submit(screen.getByLabelText(/Business name/).closest("form")!);
 
     expect(screen.getByRole("status").textContent).toContain("Creating your marketing campaign");
     expect(await screen.findAllByRole("heading", { name: "A weekend coffee treat" })).toHaveLength(2);
+    expect(screen.getByRole("heading", { name: "Campaign objective" })).toBeTruthy();
+    expect(container.querySelectorAll(".social-result-card .platform-badge")).toHaveLength(2);
+    expect(container.querySelectorAll(".social-result-card .platform-badge.instagram")).toHaveLength(1);
+    expect(container.querySelectorAll(".social-result-card .platform-badge.facebook")).toHaveLength(1);
     expect(screen.getByText("Your seven-day plan")).toBeTruthy();
+    expect(container.querySelectorAll("details.campaign-day")).toHaveLength(7);
+    expect(container.querySelector("details.campaign-day")?.hasAttribute("open")).toBe(true);
     expect(screen.getAllByText(/Track post engagement/)).toHaveLength(7);
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).brief.businessName).toBe("Daily Grind Coffee");

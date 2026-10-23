@@ -21,7 +21,27 @@ function isTransientProviderError(error: unknown) {
   return error instanceof APIError && error.status !== undefined && error.status >= 500;
 }
 
+function logProviderDiagnostic(error: APIError) {
+  const body = error.error && typeof error.error === "object" ? error.error as Record<string, unknown> : {};
+  const nested = body.error && typeof body.error === "object" ? body.error as Record<string, unknown> : {};
+  const code = error.code ?? body.code ?? nested.code ?? error.type ?? "unknown";
+  const rawMessage = typeof body.message === "string"
+    ? body.message
+    : typeof nested.message === "string"
+      ? nested.message
+      : error.message;
+  const message = rawMessage
+    .replace(/\bBearer\s+[^\s,;]+/gi, "Bearer [redacted]")
+    .replace(/\bsk-[A-Za-z0-9_-]{8,}/g, "[redacted-key]")
+    .replace(/[\r\n\t]+/g, " ")
+    .slice(0, 400);
+
+  console.error(`[marketing-api] OpenRouter error details: ${JSON.stringify({ status: error.status, code, message })}`);
+}
+
 function providerError(error: unknown): GenerationError {
+  if (error instanceof APIError) logProviderDiagnostic(error);
+
   if (error instanceof APIError && error.status === 429) {
     const rawRetryAfter = error.headers?.get("retry-after");
     const retryAfterSeconds = rawRetryAfter ? Number(rawRetryAfter) : undefined;
@@ -40,15 +60,12 @@ function providerError(error: unknown): GenerationError {
     return new GenerationError("AI_UNAVAILABLE", 503, "The AI service is temporarily unavailable. Please try again.", true);
   }
   if (error instanceof APIError && (error.status === 401 || error.status === 403)) {
-    console.error(`[marketing-api] OpenRouter rejected the configured key (HTTP ${error.status}).`);
     return new GenerationError("AI_NOT_CONFIGURED", 503, aiConfigurationMessage("rejected"));
   }
   if (error instanceof APIError && error.status === 402) {
-    console.error("[marketing-api] OpenRouter could not process the request with the configured account (HTTP 402).");
     return new GenerationError("AI_NOT_CONFIGURED", 503, aiModelMessage("billing"));
   }
   if (error instanceof APIError && (error.status === 400 || error.status === 404)) {
-    console.error(`[marketing-api] OpenRouter rejected the model request (HTTP ${error.status}).`);
     return new GenerationError("AI_NOT_CONFIGURED", 503, aiModelMessage("unsupported"));
   }
   if (error instanceof APIError && error.status !== undefined && error.status >= 500) {
