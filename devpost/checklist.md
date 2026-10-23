@@ -35,7 +35,7 @@ Build mode: learn
   PRD ref: `prd.md > Editing, Regeneration, and Copying`, `Generation and Loading`, `States and Boundaries`, `What We're Building`
   Spec ref: `spec.md > Components > Clipboard and user feedback`, `Components > Abuse safeguard`, `Server Validation and Secret Handling`, `Failure Handling`, `Testing and Verification`, `Where It Runs and How Someone Tries It`
   Build: Add copy confirmation and clipboard fallback, failure UI with Retry/Edit, previous-result preservation and labeling, request de-duplication, the short privacy notice, mocked retry/error tests, and the `GENERATION_ENABLED` emergency switch. Document the Vercel WAF rule and environment setup for the later deployment step; the WAF setting itself is configured in Vercel during `6-ship`.
-  Verify (mechanical): `npm run lint`, `npm test` (26 tests), and `npm run build` pass. Mocked client/route tests verify 429 guidance, disabled generation, failure preservation, successful replacement, clipboard success/fallback/failure, and duplicate-submit prevention. Rechecked that `.env.local` and the learner profile are ignored.
+  Verify (mechanical): `npm run lint`, `npm test` (28 tests), and `npm run build` pass. Mocked client/route tests verify 429 guidance, disabled generation, development-specific and production-generic missing-key messages, failure preservation, successful replacement, clipboard success/fallback/failure, and duplicate-submit prevention. Rechecked that `.env.local` and the learner profile are ignored.
   Learner check: Component tests exercised copy feedback/fallback and a failed regeneration that preserved both the brief and old campaign, followed by successful replacement. The full manual browser pass, successful live generation, mobile review, and Vercel WAF setup remain for hands-on review and shipping; the configured credential was rejected by OpenAI.
   Commit: `Add campaign recovery and copy safeguards`
 
@@ -54,7 +54,7 @@ Build mode: learn
 - [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
 - [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: Slice 1 browser interaction checks; Slice 2 route/schema/UI tests; Slice 3 copy, retry, failure-preservation, and replacement tests. Lint, 27 tests, and production build pass. One live request was attempted, but OpenAI rejected the configured credential; final hands-on browser/mobile review is still pending.
+Activity and evidence: Slice 1 browser interaction checks; Slice 2 route/schema/UI tests; Slice 3 copy, retry, failure-preservation, and replacement tests. Lint, 28 tests, and production build pass. One live request was attempted, but OpenAI rejected the configured credential; final hands-on browser/mobile review is still pending.
 Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
 Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
 Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]

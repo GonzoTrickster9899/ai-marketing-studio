@@ -6,6 +6,7 @@ import { MarketingStudio } from "./marketing-studio";
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 const generatedResult = {
@@ -116,6 +117,25 @@ describe("MarketingStudio business brief", () => {
     expect((screen.getByLabelText(/Business name/) as HTMLInputElement).value).toBe("Daily Grind Coffee");
     expect(screen.getByRole("button", { name: /Try again/ })).toBeTruthy();
     expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("gives local developers actionable guidance for missing AI configuration", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: {
+        code: "AI_NOT_CONFIGURED",
+        message: "AI generation needs setup. Add OPENAI_API_KEY to the project-root .env.local, restart the development server, then try again.",
+        retryable: false,
+      },
+    }), { status: 503, headers: { "Content-Type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<MarketingStudio />);
+    fireEvent.click(screen.getByRole("button", { name: /Try sample business/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
+
+    expect(await screen.findByText("AI setup is needed")).toBeTruthy();
+    expect(screen.getByText(/restart the development server/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Try again after setup/ })).toBeTruthy();
   });
 
   it("keeps previous results after a failed regeneration and replaces them after retry succeeds", async () => {
