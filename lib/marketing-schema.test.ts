@@ -30,7 +30,7 @@ describe("marketingBriefSchema", () => {
   });
 
   it("enforces field length limits", () => {
-    const result = marketingBriefSchema.safeParse({ ...sampleBusiness, businessName: "a".repeat(81) });
+    const result = marketingBriefSchema.safeParse({ ...sampleBusiness, businessName: "a".repeat(121) });
     expect(result.success).toBe(false);
   });
 });

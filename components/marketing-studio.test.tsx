@@ -1,9 +1,34 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { MarketingStudio } from "./marketing-studio";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+
+const generatedResult = {
+  campaignSummary: "Invite local coffee fans to try the weekend drinks offer.",
+  socialContent: ["instagram", "facebook"].map((platform) => ({
+    platform,
+    headline: "A weekend coffee treat",
+    caption: `Try a matcha latte at Daily Grind Coffee on ${platform}.`,
+    hashtags: ["CoffeeTime"],
+    callToAction: "Visit us this weekend.",
+  })),
+  campaignPlan: Array.from({ length: 7 }, (_, index) => ({
+    day: index + 1,
+    contentIdea: `Showcase a coffee moment ${index + 1}`,
+    format: "photo",
+    captions: ["instagram", "facebook"].map((platform) => ({
+      platform,
+      caption: `Enjoy a coffee moment on ${platform}.`,
+    })),
+    callToAction: "Visit this weekend.",
+    suggestedMetric: "Track post engagement.",
+  })),
+};
 
 describe("MarketingStudio business brief", () => {
   it("starts blank, loads the sample, and keeps sample fields editable", () => {
@@ -21,7 +46,7 @@ describe("MarketingStudio business brief", () => {
 
   it("lists each required field when an empty brief is submitted", () => {
     render(<MarketingStudio />);
-    fireEvent.click(screen.getByRole("button", { name: /Check my brief/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
 
     expect(screen.getByText("Please enter a business name.")).toBeTruthy();
     expect(screen.getByText("Please describe your product or service.")).toBeTruthy();
@@ -34,7 +59,7 @@ describe("MarketingStudio business brief", () => {
     render(<MarketingStudio />);
     const businessName = screen.getByLabelText(/Business name/);
     fireEvent.change(businessName, { target: { value: "A saved business" } });
-    fireEvent.click(screen.getByRole("button", { name: /Check my brief/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
 
     expect(await screen.findByText("Please describe your product or service.")).toBeTruthy();
     expect(screen.getByText("Please describe your target audience.")).toBeTruthy();
@@ -52,10 +77,43 @@ describe("MarketingStudio business brief", () => {
     render(<MarketingStudio />);
     fireEvent.click(screen.getByRole("button", { name: /Try sample business/ }));
     fireEvent.change(screen.getByLabelText(/Offer or promotion/), { target: { value: "" } });
-    fireEvent.click(screen.getByRole("button", { name: /Check my brief/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
 
     expect(screen.getByText("Describe the offer you want to promote.")).toBeTruthy();
     fireEvent.change(screen.getByLabelText(/Offer or promotion/), { target: { value: "Free size upgrade this weekend" } });
     expect(screen.queryByText("Describe the offer you want to promote.")).toBeNull();
+  });
+
+  it("generates and renders both coordinated outputs from the sample brief", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ result: generatedResult }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<MarketingStudio />);
+    fireEvent.click(screen.getByRole("button", { name: /Try sample business/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
+
+    expect(screen.getByRole("status").textContent).toContain("Creating your marketing campaign");
+    expect(await screen.findAllByRole("heading", { name: "A weekend coffee treat" })).toHaveLength(2);
+    expect(screen.getByText("Your seven-day plan")).toBeTruthy();
+    expect(screen.getAllByText(/Track post engagement/)).toHaveLength(7);
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).brief.businessName).toBe("Daily Grind Coffee");
+  });
+
+  it("preserves the brief and offers retry after a generation error", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: { message: "The AI service is temporarily unavailable. Please try again." },
+    }), { status: 503, headers: { "Content-Type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<MarketingStudio />);
+    fireEvent.click(screen.getByRole("button", { name: /Try sample business/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Marketing Plan/ }));
+
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    expect((screen.getByLabelText(/Business name/) as HTMLInputElement).value).toBe("Daily Grind Coffee");
+    expect(screen.getByRole("button", { name: /Try again/ })).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });

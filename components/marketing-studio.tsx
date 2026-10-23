@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import {
   blankMarketingBrief,
   brandTones,
@@ -9,8 +9,11 @@ import {
   platformOptions,
   type MarketingBrief,
   type MarketingBriefFormState,
+  validateMarketingResultForBrief,
+  type MarketingResult,
 } from "@/lib/marketing-schema";
 import { sampleBusiness } from "@/lib/sample-business";
+import { CampaignResults } from "@/components/campaign-results";
 
 type FieldErrors = Partial<Record<keyof MarketingBrief, string>>;
 
@@ -18,6 +21,10 @@ export function MarketingStudio() {
   const [brief, setBrief] = useState<MarketingBriefFormState>(blankMarketingBrief);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [summary, setSummary] = useState("");
+  const [result, setResult] = useState<MarketingResult | null>(null);
+  const [generationError, setGenerationError] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const requestInFlight = useRef(false);
   const offerRequired = brief.marketingGoal === "special_offer";
 
   function updateBrief<K extends keyof MarketingBriefFormState>(key: K, value: MarketingBriefFormState[K]) {
@@ -44,8 +51,9 @@ export function MarketingStudio() {
     setSummary("Sample business loaded — edit any field to personalize your brief.");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (requestInFlight.current) return;
     const result = marketingBriefSchema.safeParse(brief);
     if (!result.success) {
       const nextErrors: FieldErrors = {};
@@ -67,7 +75,41 @@ export function MarketingStudio() {
       return;
     }
     setErrors({});
-    setSummary("Your brief is ready. Campaign generation will be connected in the next build slice.");
+    setSummary("");
+    setGenerationError("");
+    requestInFlight.current = true;
+    setIsGenerating(true);
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brief: result.data }),
+      });
+      const payload: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        const errorMessage = payload && typeof payload === "object" && "error" in payload
+          && payload.error && typeof payload.error === "object" && "message" in payload.error
+          && typeof payload.error.message === "string" && payload.error.message.length <= 240
+          ? payload.error.message
+          : response.status === 429
+            ? "There are too many requests right now. Please wait a moment and try again."
+            : "We couldn’t generate your campaign. Your business brief is safe. Please try again.";
+        setGenerationError(errorMessage);
+        return;
+      }
+      try {
+        const candidate = payload && typeof payload === "object" && "result" in payload ? payload.result : null;
+        const nextResult = validateMarketingResultForBrief(candidate, result.data);
+        setResult(nextResult);
+      } catch {
+        setGenerationError("The campaign response could not be processed. Your brief is safe. Please try again.");
+      }
+    } catch {
+      setGenerationError("We couldn’t connect to the AI service. Your business brief is safe. Please try again.");
+    } finally {
+      requestInFlight.current = false;
+      setIsGenerating(false);
+    }
   }
 
   const errorCount = Object.keys(errors).length;
@@ -107,22 +149,22 @@ export function MarketingStudio() {
           <div className="field-grid">
             <div className="field" data-field="businessName">
               <label htmlFor="businessName">Business name <span className="required">*</span></label>
-              <input id="businessName" name="businessName" maxLength={80} placeholder="e.g. Daily Grind Coffee" value={brief.businessName} aria-invalid={Boolean(errors.businessName)} aria-describedby={errors.businessName ? "businessName-error" : undefined} onChange={(e) => updateBrief("businessName", e.target.value)} />
+              <input id="businessName" name="businessName" maxLength={120} placeholder="e.g. Daily Grind Coffee" value={brief.businessName} aria-invalid={Boolean(errors.businessName)} aria-describedby={errors.businessName ? "businessName-error" : undefined} onChange={(e) => updateBrief("businessName", e.target.value)} />
               {errors.businessName && <p className="field-error" id="businessName-error">{errors.businessName}</p>}
             </div>
             <div className="field" data-field="productOrService">
               <label htmlFor="productOrService">Product or service <span className="required">*</span></label>
-              <input id="productOrService" name="productOrService" maxLength={160} placeholder="e.g. Iced coffee and matcha latte" value={brief.productOrService} aria-invalid={Boolean(errors.productOrService)} aria-describedby={errors.productOrService ? "productOrService-error" : undefined} onChange={(e) => updateBrief("productOrService", e.target.value)} />
+              <input id="productOrService" name="productOrService" maxLength={300} placeholder="e.g. Iced coffee and matcha latte" value={brief.productOrService} aria-invalid={Boolean(errors.productOrService)} aria-describedby={errors.productOrService ? "productOrService-error" : undefined} onChange={(e) => updateBrief("productOrService", e.target.value)} />
               {errors.productOrService && <p className="field-error" id="productOrService-error">{errors.productOrService}</p>}
             </div>
             <div className="field" data-field="offer">
               <label htmlFor="offer">Offer or promotion <span className="optional">{offerRequired ? "Required for this goal" : "Optional"}</span></label>
-              <input id="offer" name="offer" maxLength={180} placeholder="e.g. 10% off selected drinks this weekend" value={brief.offer ?? ""} aria-invalid={Boolean(errors.offer)} aria-describedby={errors.offer ? "offer-error" : "offer-hint"} onChange={(e) => updateBrief("offer", e.target.value)} />
+              <input id="offer" name="offer" maxLength={300} placeholder="e.g. 10% off selected drinks this weekend" value={brief.offer ?? ""} aria-invalid={Boolean(errors.offer)} aria-describedby={errors.offer ? "offer-error" : "offer-hint"} onChange={(e) => updateBrief("offer", e.target.value)} />
               {errors.offer ? <p className="field-error" id="offer-error">{errors.offer}</p> : <p className="field-hint" id="offer-hint">Only add this if you have a specific offer to promote.</p>}
             </div>
             <div className="field" data-field="targetAudience">
               <label htmlFor="targetAudience">Who are you trying to reach? <span className="required">*</span></label>
-              <input id="targetAudience" name="targetAudience" maxLength={160} placeholder="e.g. College students and young professionals" value={brief.targetAudience} aria-invalid={Boolean(errors.targetAudience)} aria-describedby={errors.targetAudience ? "targetAudience-error" : undefined} onChange={(e) => updateBrief("targetAudience", e.target.value)} />
+              <input id="targetAudience" name="targetAudience" maxLength={300} placeholder="e.g. College students and young professionals" value={brief.targetAudience} aria-invalid={Boolean(errors.targetAudience)} aria-describedby={errors.targetAudience ? "targetAudience-error" : undefined} onChange={(e) => updateBrief("targetAudience", e.target.value)} />
               {errors.targetAudience && <p className="field-error" id="targetAudience-error">{errors.targetAudience}</p>}
             </div>
           </div>
@@ -166,8 +208,10 @@ export function MarketingStudio() {
 
           <div className="privacy-note"><span aria-hidden="true">ⓘ</span><p>When you generate a plan, your brief will be sent to OpenAI and is not saved by this app. Don’t include confidential details or customer personal data.</p></div>
           <div className="form-actions">
-            <button className="primary-button" type="submit">Check my brief <span aria-hidden="true">→</span></button>
-            <p className="action-note">You can edit everything before generating your plan.</p>
+            <button className="primary-button" type="submit" disabled={isGenerating} aria-busy={isGenerating}>
+              {isGenerating ? <><span className="loading-spinner" aria-hidden="true" /> Creating your marketing campaign…</> : <>{generationError ? "Try again" : result ? "Regenerate Marketing Plan" : "Generate Marketing Plan"} <span aria-hidden="true">→</span></>}
+            </button>
+            <p className="action-note">{isGenerating ? "This usually takes a few seconds. Please keep this page open." : "You can edit everything before generating your plan."}</p>
           </div>
         </form>
 
@@ -176,14 +220,16 @@ export function MarketingStudio() {
             <div className="heading-icon lavender" aria-hidden="true">02</div>
             <div><h2>Your campaign</h2><p>Social content and a coordinated seven-day plan.</p></div>
           </div>
-          <div className="empty-state">
+          {isGenerating && <div className="generation-status" role="status" aria-live="polite"><span className="loading-spinner" aria-hidden="true" /><div><strong>Creating your marketing campaign…</strong><p>Using your brief to prepare social content and a seven-day plan.</p></div></div>}
+          {generationError && <div className="generation-error" role="alert"><span className="error-icon" aria-hidden="true">!</span><div><strong>We couldn’t generate your campaign</strong><p>{generationError}</p></div></div>}
+          {generationError && result && <p className="previous-result-note">Showing your previous successful campaign while you retry.</p>}
+          {result ? <CampaignResults result={result} /> : !isGenerating && !generationError && <div className="empty-state">
             <div className="empty-illustration" aria-hidden="true"><span className="spark spark-one">✳</span><span className="doc-icon"><i /><i /><i /></span><span className="spark spark-two">✦</span></div>
             <span className="empty-kicker">YOUR RESULTS WILL APPEAR HERE</span>
             <h3>Ready when you are</h3>
             <p>Complete your business brief to see platform-tailored social content and a simple campaign plan.</p>
             <div className="result-preview"><span className="preview-pill">INSTAGRAM + FACEBOOK</span><span className="preview-pill">7-DAY CAMPAIGN</span></div>
-          </div>
-          <div className="results-footnote"><span className="footnote-dot" /> Suggested metrics are ideas to track, not live performance data.</div>
+          </div>}
         </aside>
       </section>
       <footer className="page-footer"><span>Thoughtful marketing starts with knowing your business.</span><span>AI Marketing Studio <b>·</b> MVP preview</span></footer>

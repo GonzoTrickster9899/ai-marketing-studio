@@ -19,14 +19,14 @@ Build mode: learn
   Learner check: Open `http://localhost:3000`, load the sample, edit a value, submit an incomplete brief, and check that the sample stays editable and errors point to the missing field.
   Commit: `Build validated business brief form`
 
-- [ ] **2. Generate the coordinated campaign from the brief**
+- [x] **2. Generate the coordinated campaign from the brief**
   Becomes usable: A valid brief goes through the server-side API to OpenAI and returns platform-tailored social content plus one structured seven-day plan.
   Why now: This proves the unique kernel early and tests the external API/schema assumption before adding more polish. The form, one protected route, and result UI become one working path.
   PRD ref: `prd.md > The Core Journey`, `Generation and Loading`, `Social Content`, `Seven-Day Campaign Plan`, `States and Boundaries`
   Spec ref: `spec.md > The Core Journey Through the System`, `Components > Generation route and provider adapter`, `Components > Social content and campaign results`, `Data Model`, `API contract: POST /api/generate`, `OpenAI Request and Response`, `Server Validation and Secret Handling`, `External Services and Dependencies`
   Build: Add the shared brief/result schemas and sample data, server-only OpenAI Responses integration with `zodTextFormat`, the JSON route contract and safe error mapping, and result cards for `campaignSummary`, selected-platform social cards, and seven expandable campaign days. Add field/body limits and bounded model settings (`gpt-6-luna`, low reasoning, 5,000 output tokens). Keep the API key in `.env.local`; never request or commit it.
-  Verify (mechanical): Run `npm run lint`, `npm run test`, and `npm run build`; mocked tests cover route success, validation, exact seven-day output, selected-platform matching, and provider failures. With the learner’s locally configured key, run one coffee-shop smoke generation and inspect the parsed result.
-  Learner check: Generate the coffee-shop sample and trace how one brief becomes separate selected-platform captions and the shared seven-day plan. If no local key is configured yet, inspect the safe configuration error without sharing the key.
+  Verify (mechanical): `npm run lint`, `npm test` (21 tests), and `npm run build` pass. Mocked tests cover route success, validation, exact seven-day output, selected-platform matching, OpenAI JSON Schema conversion, provider failures, generation UI, and preserved inputs after an error. The production dependency audit could not reach the npm advisory endpoint in this environment.
+  Learner check: Exercised the result UI with a mocked generation response, including two tailored platform cards and seven campaign days. Confirmed the local API returns a safe `AI_NOT_CONFIGURED` response when no key is set; no real provider smoke generation was run because `OPENAI_API_KEY` is not configured.
   Commit: `Generate structured marketing campaigns`
 
 - [ ] **3. Copy, recover, and protect public generation**
@@ -41,7 +41,7 @@ Build mode: learn
 
 ## Hands-on Checkpoints
 
-- [x] Early usable behavior explored — after slice 1, reviewed the brief form and visual direction; sample/edit/validation interactions verified with component tests before wiring the AI response.
+- [x] Early usable behavior explored — after slice 1, reviewed the brief form and visual direction; fresh-load, sample/edit, and incomplete-submit/focus behavior checked in a local browser before wiring the AI response.
 - [ ] Final kick-the-tires exploration and feedback completed — after slice 3, try the full generation, copy, edit, retry, and mobile flow.
 
 ## Final Review
@@ -54,7 +54,7 @@ Build mode: learn
 - [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
 - [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
+Activity and evidence: Slice 1 browser interaction checks and Slice 2 component/route/schema tests; lint and production build pass. A live OpenAI request remains unverified until a private key is configured locally.
 Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
 Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
 Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
