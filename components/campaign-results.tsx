@@ -29,7 +29,7 @@ export function CampaignResults({ result }: CampaignResultsProps) {
             <article className="social-result-card" key={item.platform}>
               <div className="social-card-header">
                 <h4 className={`platform-badge ${item.platform}`}>
-                  <span aria-hidden="true">{item.platform === "instagram" ? "◎" : "f"}</span>
+                  <span aria-hidden="true">{item.platform === "instagram" ? "IG" : "f"}</span>
                   {platformLabel(item.platform)}
                 </h4>
                 <span className="content-kind">Caption</span>
@@ -100,7 +100,7 @@ export function CampaignResults({ result }: CampaignResultsProps) {
             </details>
           ))}
         </div>
-        <p className="metrics-disclaimer"><span aria-hidden="true">ⓘ</span> Metrics are suggestions to track. They are not live performance data or predicted results.</p>
+        <p className="metrics-disclaimer"><span aria-hidden="true">i</span> Metrics are suggestions to track. They are not live performance data or predicted results.</p>
       </section>
     </div>
   );

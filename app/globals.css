@@ -125,8 +125,8 @@ button:focus-visible, input:focus-visible, label:focus-within, fieldset:focus-vi
 .result-preview { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 20px; }
 .preview-pill { border: 1px solid #ece9f5; border-radius: 999px; padding: 7px 9px; background: #fcfbff; color: #716b84; font-size: 9px; font-weight: 700; letter-spacing: .04em; }
 .campaign-results { display: grid; gap: 22px; min-width: 0; }
-.campaign-objective { border: 1px solid #e8e3f5; border-radius: 12px; padding: 15px 16px; background: linear-gradient(135deg, #fbfaff, #fff); }
-.campaign-objective h3 { margin: 0 0 6px; color: #6250b2; font-size: 11px; font-weight: 750; letter-spacing: .035em; }
+.campaign-objective { border: 1px solid #e8e3f5; border-radius: 12px; padding: 16px 17px; background: linear-gradient(135deg, #f8f6ff, #fff 75%); }
+.campaign-objective h3 { margin: 0 0 7px; color: #5d49b5; font-size: 12px; font-weight: 760; letter-spacing: .01em; }
 .campaign-objective p { margin: 0; color: #343145; font-size: 13px; line-height: 1.6; }
 .result-section { display: grid; gap: 12px; min-width: 0; }
 .result-section + .result-section { border-top: 1px solid #efedf3; padding-top: 19px; }
@@ -162,16 +162,17 @@ button:focus-visible, input:focus-visible, label:focus-within, fieldset:focus-vi
 .day-chevron { width: 8px; height: 8px; border-right: 1.5px solid #827d90; border-bottom: 1.5px solid #827d90; transform: rotate(45deg) translateY(-2px); transition: transform .15s; }
 .campaign-day[open] .day-chevron { transform: rotate(225deg) translate(-1px, -1px); }
 .campaign-day-content { display: grid; gap: 14px; border-top: 1px solid #f0edf5; padding: 14px; }
-.day-detail-block { min-width: 0; border: 1px solid #eeebf3; border-radius: 9px; padding: 11px 12px; background: #fcfbfe; }
-.day-detail-block h4, .day-caption-section > h4 { margin-bottom: 6px; color: #6250b2; font-size: 10px; letter-spacing: .02em; text-transform: none; }
-.day-detail-block p, .day-caption p { margin: 0; color: #504c5b; font-size: 11px; line-height: 1.55; overflow-wrap: anywhere; }
-.day-caption-section { display: grid; gap: 7px; }
+.day-detail-block { min-width: 0; border: 1px solid #e9e6f0; border-radius: 9px; padding: 12px 13px; background: #fff; }
+.day-detail-block h4, .day-caption-section > h4 { margin: 0 0 7px; color: #5d49b5; font-size: 11px; font-weight: 750; letter-spacing: 0; text-transform: none; }
+.day-detail-block p, .day-caption p { margin: 0; color: #454252; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.idea-block { border-color: #e5defa; background: #faf9ff; }
+.day-caption-section { display: grid; gap: 8px; border: 1px solid #ece9f2; border-radius: 9px; padding: 12px; background: #fff; }
 .day-caption-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.day-caption { min-width: 0; border-radius: 8px; padding: 10px 11px; background: #f8f7fb; }
-.day-caption h5 { margin: 0 0 5px; color: #383549; font-size: 10px; font-weight: 750; }
+.day-caption { min-width: 0; border-left: 2px solid #c8baf7; border-radius: 0 8px 8px 0; padding: 9px 11px; background: #faf9fd; }
+.day-caption h5 { margin: 0 0 6px; color: #383549; font-size: 11px; font-weight: 750; }
 .day-meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .metrics-disclaimer { display: flex; gap: 7px; align-items: flex-start; margin: 0; color: #777386; font-size: 10px; line-height: 1.5; }
-.metrics-disclaimer span { color: var(--purple); font-size: 12px; }
+.metrics-disclaimer span { display: inline-grid; place-items: center; flex: 0 0 15px; width: 15px; height: 15px; border: 1px solid #c9beef; border-radius: 50%; color: var(--purple); font-size: 9px; font-weight: 750; }
 .results-footnote { display: flex; gap: 7px; align-items: center; border-top: 1px solid #f0eef4; padding-top: 13px; color: #878392; font-size: 10px; line-height: 1.4; }
 .footnote-dot { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #9c8ae7; }
 .page-footer { display: flex; justify-content: space-between; gap: 12px; padding: 20px 2px 0; color: #9692a0; font-size: 10px; }
