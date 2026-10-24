@@ -69,9 +69,9 @@ Activity mode: Learner completed the map walkthrough and approved the final tech
 
 - [x] Current official event requirements checked: public licensed repository, project description, and a public YouTube/Vimeo demo under three minutes that shows the app running. See the [official rules](https://learn-ai-basics.devpost.com/rules).
 - [x] Local release review: MIT license present with learner-selected attribution; `.env.example` contains a placeholder only; `.env.local` and `devpost/learner-profile.md` are ignored and absent from tracked history; the credential-pattern scan found no matches in Git history.
-- [x] Skill-pack install directories and lockfile are ignored. The untracked root skill-pack README and alternate reviewed map are not included in the application checkpoint.
-- [x] Current local checks: 31 tests, lint, and production build pass.
-- [ ] Public repository: no remote is configured and no repository has been created or published.
+- [x] Skill-pack install directories, lockfile, and local `.local/` materials are ignored. The course README is preserved under `.local/`; the alternate `devpost/app-map-reviewed.html` remains local and is excluded. The root README documents this application.
+- [x] Release checks: 31 tests, lint, and production build passed before the final documentation-only updates.
+- [x] Public repository: [https://github.com/GonzoTrickster9899/ai-marketing-studio](https://github.com/GonzoTrickster9899/ai-marketing-studio) is public; `main` has been pushed and verified through unauthenticated access. The URL is also recorded in `spec.md`.
 - [ ] Public demo video: record and upload to YouTube or Vimeo; confirm public access and duration under three minutes.
 - [ ] Optional public app: no Vercel deployment or WAF rule is configured. If deploying, set the provider key server-side, configure the documented IP rule, review current pricing/terms, monitor OpenRouter usage, and retain the generation kill switch.
 - [ ] Learner writes the submission fields and completes the exit survey in Devpost.

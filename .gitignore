@@ -15,6 +15,7 @@ secrets.*.json
 local.settings.json
 
 # Local tool/build output
+/.local/
 .next/
 node_modules/
 .vercel/
