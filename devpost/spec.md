@@ -276,7 +276,7 @@ No database, authentication service, analytics provider, social network API, or 
 
 ## Sharing Instructions
 
-- Public repository URL: pending. No Git remote is configured yet.
+- Public repository URL: https://github.com/GonzoTrickster9899/ai-marketing-studio (public; `main` pushed and verified).
 - Public demo-video URL: pending. Record a publicly accessible YouTube or Vimeo link after confirming the uploaded video is under three minutes and shows the running app.
 - Optional public live-app URL: pending. No Vercel deployment or WAF rule is configured yet.
 - Before public release, inspect the exact files and Git history to be published; keep `devpost/learner-profile.md`, `.env.local`, API credentials, and local skill-install artifacts out of the public repository.
