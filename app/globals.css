@@ -55,11 +55,11 @@ button:focus-visible, input:focus-visible, label:focus-within, fieldset:focus-vi
 .field input:hover { border-color: #c9c4d6; }
 .field input:focus { outline: 0; border-color: #9d89ec; box-shadow: 0 0 0 3px #f0edff; }
 .field input[aria-invalid="true"] { border-color: #d92d4d; }
-.field-hint, .field-error { margin: 6px 0 0; font-size: 11px; line-height: 1.45; }
+.field-hint, .field-error { margin: 6px 0 0; font-size: 12px; line-height: 1.5; }
 .field-hint { color: #898694; }
 .field-error { color: var(--danger); font-weight: 600; }
 .choice-section, .setting-block { min-width: 0; padding: 0; border: 0; margin: 22px 0 0; }
-.section-help { margin: -2px 0 11px; color: var(--muted); font-size: 11px; }
+.section-help { margin: -2px 0 11px; color: var(--muted); font-size: 12px; }
 .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .goal-option { display: flex; position: relative; gap: 9px; align-items: flex-start; min-height: 65px; border: 1px solid #ebe9f0; border-radius: 10px; padding: 10px 9px; cursor: pointer; transition: .15s ease; }
 .goal-option:hover, .platform-option:hover, .tone-option:hover { border-color: #c5b9f4; background: #fcfbff; }
@@ -81,7 +81,7 @@ button:focus-visible, input:focus-visible, label:focus-within, fieldset:focus-vi
 .tone-option.selected { color: var(--purple-dark); font-weight: 650; }
 .privacy-note { display: flex; gap: 9px; align-items: flex-start; margin-top: 23px; border-radius: 9px; background: #f8f7fb; padding: 10px 12px; color: #777485; }
 .privacy-note > span { color: var(--purple); font-size: 14px; }
-.privacy-note p { margin: 0; font-size: 10px; line-height: 1.5; }
+.privacy-note p { margin: 0; font-size: 11px; line-height: 1.55; }
 .form-actions { display: grid; grid-template-columns: .8fr 1.2fr; gap: 9px; margin-top: 15px; }
 .form-actions button { display: flex; gap: 8px; align-items: center; justify-content: center; min-height: 44px; border-radius: 9px; cursor: pointer; font-size: 12px; font-weight: 700; transition: transform .15s, background .15s, border .15s; }
 .form-actions button:active { transform: translateY(1px); }
@@ -135,7 +135,7 @@ button:focus-visible, input:focus-visible, label:focus-within, fieldset:focus-vi
 .result-section-heading > div { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .result-step { display: grid; place-items: center; flex: 0 0 24px; width: 24px; height: 24px; border-radius: 8px; background: var(--lavender); color: var(--purple); font-size: 9px; font-weight: 800; }
 .result-section-heading h3 { margin: 0; font-size: 15px; letter-spacing: -.02em; }
-.result-section-heading > p { margin: 0; color: var(--muted); text-align: right; font-size: 10px; line-height: 1.45; }
+.result-section-heading > p { margin: 0; color: var(--muted); text-align: right; font-size: 11px; line-height: 1.5; }
 .social-result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
 .social-result-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid #e8e5ee; border-radius: 12px; padding: 14px; background: #fff; box-shadow: 0 3px 12px rgb(43 30 80 / 3%); }
 .social-card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -158,7 +158,7 @@ button:focus-visible, input:focus-visible, label:focus-within, fieldset:focus-vi
 .campaign-day-summary::-webkit-details-marker { display: none; }
 .campaign-day-summary:focus-visible { outline: 3px solid #b7a8ff; outline-offset: -3px; }
 .day-number { color: #6654b7; font-size: 10px; font-weight: 800; white-space: nowrap; }
-.day-summary-idea { min-width: 0; color: #353245; font-size: 11px; font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }
+.day-summary-idea { display: block; min-width: 0; color: #353245; font-size: 12px; font-weight: 650; line-height: 1.5; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
 .format-chip { background: #f2efff; color: #6552b5; }
 .day-chevron { width: 8px; height: 8px; border-right: 1.5px solid #827d90; border-bottom: 1.5px solid #827d90; transform: rotate(45deg) translateY(-2px); transition: transform .15s; }
 .campaign-day[open] .day-chevron { transform: rotate(225deg) translate(-1px, -1px); }
@@ -181,8 +181,9 @@ button:focus-visible, input:focus-visible, label:focus-within, fieldset:focus-vi
 
 @media (max-width: 920px) {
   .studio-shell { padding-right: 3.2%; padding-left: 3.2%; }
-  .workspace { grid-template-columns: minmax(0, 1fr) minmax(310px, .88fr); gap: 14px; }
+  .workspace { grid-template-columns: 1fr; gap: 14px; }
   .brief-card, .results-card { padding-right: 18px; padding-left: 18px; }
+  .results-card { position: static; }
   .goal-grid { grid-template-columns: 1fr; }
   .goal-option { min-height: 56px; }
   .settings-row { grid-template-columns: 1fr; gap: 0; }
