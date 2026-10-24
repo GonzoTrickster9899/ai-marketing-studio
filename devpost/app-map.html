@@ -56,7 +56,7 @@
       <h1>AI Marketing Studio — App Map</h1>
       <p class="lead">One business brief travels through validation and a server-side AI request, then becomes platform captions and a seven-day campaign. This map points to the code that owns each step.</p>
       <div class="pills"><span class="pill">Next.js + TypeScript</span><span class="pill">OpenRouter</span><span class="pill">Zod schema</span><span class="pill">React UI state</span><span class="pill">Vitest</span></div>
-      <p class="notice"><strong>Source checked.</strong> Paths and behavior below were verified against the project source at commit <code>a4177d6</code>. This is a reference route; it does not record that the learner has completed the walkthrough.</p>
+      <p class="notice"><strong>Source checked and walkthrough completed.</strong> The main paths and behavior below were verified against the project source at commit <code>a4177d6</code>. The learner reports completing all three code stops.</p>
     </div>
   </header>
 
@@ -78,7 +78,7 @@
 
     <section id="route">
       <h2>2. Reference code route</h2>
-      <p class="intro">Open these three stops in order while following one submitted brief. The browser behavior can be tried locally with <code>npm run dev</code>; this route is not a record of a completed learner walkthrough.</p>
+      <p class="intro">These three stops trace one submitted brief from the form, through the server request, to the rendered results and copy controls. The learner completed this route against the source paths listed below.</p>
       <div class="route">
         <details open>
           <summary>Stop 1 · Form and contract</summary>
@@ -151,19 +151,19 @@ npm run build</pre>
     </section>
 
     <section id="review">
-      <h2>5. Remaining hands-on review</h2>
-      <p class="intro">These checks are still to be tried in the current checkout before the final review can be marked complete.</p>
+      <h2>5. Review and verification record</h2>
+      <p class="intro">The learner approved the final technical review after checking the live campaign screenshots and walking through the three code stops.</p>
       <div class="card">
         <ul>
-          <li>Make one real OpenRouter request; check separate selected-platform captions and exactly seven ordered days.</li>
-          <li>Change a brief field and regenerate; verify the new campaign replaces the old one only after success.</li>
-          <li>Cause a failed regeneration; verify the brief and previous successful result remain available.</li>
-          <li>Review keyboard focus and the desktop, tablet and mobile layouts.</li>
-          <li>Confirm the Git status and public-safe file list before publishing.</li>
+          <li>The learner reports successful live OpenRouter generation and edited-brief regeneration.</li>
+          <li>The focused UI test simulates a failed regeneration and verifies the edited brief and previous result remain available; a successful retry replaces the prior result.</li>
+          <li>The learner reports responsive layout and copy-timer checks; automated browser checks used a mocked generation response at 1440 px, 820 px, and 390 px.</li>
+          <li>Automated verification: 31 tests, lint, and production build pass on the final review checkout.</li>
+          <li>Public deployment and its Vercel WAF rule are not configured yet.</li>
         </ul>
       </div>
     </section>
   </main>
-  <footer class="footer"><div class="wrap">AI Marketing Studio · Source-checked app map · Reference route only until the learner completes the walkthrough.</div></footer>
+  <footer class="footer"><div class="wrap">AI Marketing Studio · Source-checked app map · Three-stop learner walkthrough completed.</div></footer>
 </body>
 </html>

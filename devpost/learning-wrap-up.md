@@ -11,7 +11,7 @@ One editable small-business brief produces tailored social captions for the sele
 3. `lib/openrouter-marketing.ts`: `generateMarketingResult` calls OpenRouter, parses the structured result, and checks the seven ordered days and selected platforms.
 4. `components/campaign-results.tsx` and `components/copy-button.tsx`: validated results become caption and campaign cards; each copy control manages its own temporary confirmation.
 
-The detailed, source-checked route is `devpost/app-map.html`. It describes the source at commit `a4177d6`; refresh it if these files or responsibilities change.
+The detailed, source-checked route is `devpost/app-map.html`. The learner reviewed its three code stops against the source paths. Refresh the map if those files or responsibilities change.
 
 ## A practice to reuse
 
@@ -21,12 +21,12 @@ Mock provider responses in routine tests to check success and failure paths with
 
 ## Verification record
 
-At commit `a4177d6`, 31 tests, lint, and production build passed. A production browser run used a mocked generation response to check the result cards at 1440 px, 820 px, and 390 px; no horizontal overflow appeared. The long campaign title wrapped, and the two copy controls showed independent two-second confirmation timers. The browser run did not use OpenRouter.
+At final shipping review, 31 tests, lint, and production build passed. A flaky assertion that queried an initially empty copy live region was changed to wait for the announcement text. A production browser run used a mocked generation response to check result cards at 1440 px, 820 px, and 390 px; no horizontal overflow appeared. The long campaign title wrapped, and the two copy controls showed independent two-second confirmation timers. The learner reports a successful live OpenRouter generation and edited-brief regeneration. The browser layout run itself used a mock.
 
-A previous live OpenRouter smoke request returned HTTP 200 before the final UI polish. A live request against the final checkout, hands-on edit/regenerate behavior, and failed-regeneration recovery still need the learner's final review before shipping.
+A focused UI simulation covers success, failed regeneration, and successful retry, asserting the edited brief and previous result remain visible after failure and that a successful retry replaces the old campaign. The learner approved the final technical review based on the reported live generation and screenshot evidence.
 
 ## Walkthrough status
 
-The app map is source-checked and ready as a reference. The learner has not yet completed the final hands-on review or a walkthrough of the map. Do not mark the corresponding checklist items complete until those activities happen and the learner confirms the review is finished.
+The app map is source-checked, shown, and the learner reports completing its three-stop walkthrough. The learner's takeaway was: define the data contract first, keep external API calls in a server-side module, and test success and failure separately. The checklist records completion and the verification sources.
 
-Optional reflection prompt: What would you do differently next time you turn a product requirement into a small Codex task? If recorded, a personal answer belongs in the ignored learner profile, not this public-safe reference.
+The learner's personal takeaway is recorded in the ignored learner profile; this reference keeps the public planning files free of personal profile details.

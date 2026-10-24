@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CopyButton } from "./copy-button";
 
@@ -59,7 +59,7 @@ describe("CopyButton", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Copy caption" }));
 
-    expect((await screen.findByRole("status")).textContent).toContain("Content copied.");
+    await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Content copied."));
     expect(writeText).toHaveBeenCalledWith("Headline\n\nCaption");
   });
 
@@ -70,7 +70,7 @@ describe("CopyButton", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Copy caption" }));
 
-    expect((await screen.findByRole("status")).textContent).toContain("Content copied.");
+    await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Content copied."));
     expect(document.execCommand).toHaveBeenCalledWith("copy");
   });
 
@@ -81,6 +81,6 @@ describe("CopyButton", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Copy caption" }));
 
-    expect((await screen.findByRole("status")).textContent).toContain("Select and copy the content manually.");
+    await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Select and copy the content manually."));
   });
 });

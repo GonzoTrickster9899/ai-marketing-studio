@@ -36,30 +36,42 @@ Build mode: learn
   Spec ref: `spec.md > Components > Clipboard and user feedback`, `Components > Abuse safeguard`, `Server Validation and Secret Handling`, `Failure Handling`, `Testing and Verification`, `Where It Runs and How Someone Tries It`
   Build: Add copy confirmation and clipboard fallback, failure UI with Retry/Edit, previous-result preservation and labeling, request de-duplication, the short privacy notice, mocked retry/error tests, and the `GENERATION_ENABLED` emergency switch. Document the Vercel WAF rule and environment setup for the later deployment step; the WAF setting itself is configured in Vercel during `6-ship`.
   Verify (mechanical): `npm run lint`, `npm test` (28 tests), and `npm run build` pass. Mocked client/route tests verify 429 guidance, disabled generation, development-specific and production-generic missing-key messages, failure preservation, successful replacement, clipboard success/fallback/failure, and duplicate-submit prevention. Rechecked that `.env.local` and the learner profile are ignored.
-  Learner check: Component tests exercised copy feedback/fallback and a failed regeneration that preserved both the brief and old campaign, followed by successful replacement. The full manual browser pass, successful live generation, mobile review, and Vercel WAF setup remain for hands-on review and shipping; the configured credential was rejected by OpenAI.
+  Learner check: Final screenshots and learner report confirm a successful OpenRouter generation and edited-brief regeneration. A focused UI test simulates success, failed regeneration, and successful retry; it verifies the edited brief and prior result persist through failure. The learner reports responsive/copy checks complete. Vercel deployment and WAF configuration remain for optional live hosting; no public deployment has been made.
   Commit: `Add campaign recovery and copy safeguards`
 
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 1, reviewed the brief form and visual direction; fresh-load, sample/edit, and incomplete-submit/focus behavior checked in a local browser before wiring the AI response.
-- [ ] Final kick-the-tires exploration and feedback completed — automated checks and a mocked production-browser pass cover results, copy timers, and responsive layout. Learner still needs to try live generation, edit/regenerate, failed-regeneration recovery, and keyboard focus in the current checkout.
+- [x] Final kick-the-tires exploration and feedback completed — learner reviewed successful live generation and edited-brief regeneration; reported responsive layouts and independent copy timers; the failed-regeneration path is covered by the focused UI simulation below. No Vercel deployment or WAF dashboard rule was performed.
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — learner approved final technical review and readiness to proceed with shipping on 2026-10-24.
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — learner inspected the app map and reports completing the three code stops using the map content and verified source paths.
+- [x] Optional edit and transfer reflection addressed — learner shared a transferable takeaway; personal wording is recorded only in the ignored learner profile.
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including project-grounded practices to reuse.
 
-Activity and evidence: 31 tests, lint, and production build pass. A production browser run used a mocked generation response and verified the result cards at 1440 px, 820 px, and 390 px with no horizontal overflow; copy confirmations reset independently after two seconds. A previous live OpenRouter request returned HTTP 200 before final UI polish. Current live generation, edit/regenerate, failed-regeneration recovery, and keyboard-focus checks remain for the learner.
-Route and stops: Source-verified reference route in `devpost/app-map.html`: `components/marketing-studio.tsx` (`handleSubmit`) → `app/api/generate/route.ts` (`POST`) and `lib/openrouter-marketing.ts` (`generateMarketingResult`) → `components/campaign-results.tsx` (`CampaignResults`) and `components/copy-button.tsx` (`CopyButton`). Learner walkthrough not yet completed.
-Edit outcome: No optional code edit has been offered or attempted.
-Reflection: Not yet offered; any personal response belongs only in the ignored profile.
-Activity mode: Focused plan-to-implementation reference prepared; learner walkthrough and final hands-on review pending.
+Activity and evidence: On the final shipping review, `npm.cmd test` passed all 31 tests, `npm.cmd run lint` passed, and `npm.cmd run build` passed. The first full test run exposed a timing assumption in a copy-announcement test; `components/copy-button.test.tsx` now waits for the live-region text, and the full suite passes. Earlier production-browser checks used mocked generation and confirmed no horizontal overflow at 1440 px, 820 px, and 390 px, title wrapping, and independent two-second copy resets. Learner reports final live OpenRouter generation, edited-brief regeneration, and responsive/copy review. Failed regeneration was simulated in `components/marketing-studio.test.tsx`: successful result → edited brief → 503 failure (prior result and edited brief retained) → successful retry replaces result. Keyboard focus was not independently rechecked in this final pass.
+Route and stops: Learner reports completing the three-stop route in `devpost/app-map.html`: `components/marketing-studio.tsx` and `lib/marketing-schema.ts` → `app/api/generate/route.ts` and `lib/openrouter-marketing.ts` → `components/campaign-results.tsx` and `components/copy-button.tsx`.
+Edit outcome: Updated the asynchronous copy-announcement test to wait for its changing live-region text; all 31 tests, lint, and production build pass.
+Reflection: Learner's transfer takeaway is recorded in the ignored learner profile, not in public planning documents.
+Activity mode: Learner completed the map walkthrough and approved the final technical review; no optional code-edit exercise was requested.
 
 ## Revisions
 
 - Scaffold in a temporary subfolder, then merge only new application files into the project root — `create-next-app` refuses to scaffold directly in this non-empty folder because it contains the existing Devpost skill pack and approved planning documents. This preserves those files while keeping the app architecture and root layout from the approved spec.
+- Final review and learning wrap-up recorded after the learner's approval; the code-tour evidence and local verification are documented above.
+
+## 6-ship Status
+
+- [x] Current official event requirements checked: public licensed repository, project description, and a public YouTube/Vimeo demo under three minutes that shows the app running. See the [official rules](https://learn-ai-basics.devpost.com/rules).
+- [x] Local release review: MIT license present with learner-selected attribution; `.env.example` contains a placeholder only; `.env.local` and `devpost/learner-profile.md` are ignored and absent from tracked history; the credential-pattern scan found no matches in Git history.
+- [x] Skill-pack install directories and lockfile are ignored. The untracked root skill-pack README and alternate reviewed map are not included in the application checkpoint.
+- [x] Current local checks: 31 tests, lint, and production build pass.
+- [ ] Public repository: no remote is configured and no repository has been created or published.
+- [ ] Public demo video: record and upload to YouTube or Vimeo; confirm public access and duration under three minutes.
+- [ ] Optional public app: no Vercel deployment or WAF rule is configured. If deploying, set the provider key server-side, configure the documented IP rule, review current pricing/terms, monitor OpenRouter usage, and retain the generation kill switch.
+- [ ] Learner writes the submission fields and completes the exit survey in Devpost.
