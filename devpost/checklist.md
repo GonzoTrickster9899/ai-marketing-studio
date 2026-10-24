@@ -42,7 +42,7 @@ Build mode: learn
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 1, reviewed the brief form and visual direction; fresh-load, sample/edit, and incomplete-submit/focus behavior checked in a local browser before wiring the AI response.
-- [ ] Final kick-the-tires exploration and feedback completed — after slice 3, try the full generation, copy, edit, retry, and mobile flow.
+- [ ] Final kick-the-tires exploration and feedback completed — automated checks and a mocked production-browser pass cover results, copy timers, and responsive layout. Learner still needs to try live generation, edit/regenerate, failed-regeneration recovery, and keyboard focus in the current checkout.
 
 ## Final Review
 
@@ -54,11 +54,11 @@ Build mode: learn
 - [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
 - [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: Slice 1 browser interaction checks; Slice 2 route/schema/UI tests; Slice 3 copy, retry, failure-preservation, and replacement tests. Lint, 28 tests, and production build pass. One live request was attempted, but OpenAI rejected the configured credential; final hands-on browser/mobile review is still pending.
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: 31 tests, lint, and production build pass. A production browser run used a mocked generation response and verified the result cards at 1440 px, 820 px, and 390 px with no horizontal overflow; copy confirmations reset independently after two seconds. A previous live OpenRouter request returned HTTP 200 before final UI polish. Current live generation, edit/regenerate, failed-regeneration recovery, and keyboard-focus checks remain for the learner.
+Route and stops: Source-verified reference route in `devpost/app-map.html`: `components/marketing-studio.tsx` (`handleSubmit`) → `app/api/generate/route.ts` (`POST`) and `lib/openrouter-marketing.ts` (`generateMarketingResult`) → `components/campaign-results.tsx` (`CampaignResults`) and `components/copy-button.tsx` (`CopyButton`). Learner walkthrough not yet completed.
+Edit outcome: No optional code edit has been offered or attempted.
+Reflection: Not yet offered; any personal response belongs only in the ignored profile.
+Activity mode: Focused plan-to-implementation reference prepared; learner walkthrough and final hands-on review pending.
 
 ## Revisions
 
