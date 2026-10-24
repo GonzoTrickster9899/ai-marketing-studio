@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type CopyButtonProps = { text: string };
 
@@ -31,24 +31,50 @@ async function copyText(text: string) {
 }
 
 export function CopyButton({ text }: CopyButtonProps) {
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState<"copied" | "error" | "">("");
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mounted = useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    };
+  }, []);
+
+  function showFeedback(nextFeedback: "copied" | "error") {
+    if (!mounted.current) return;
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    setFeedback(nextFeedback);
+    feedbackTimer.current = setTimeout(() => {
+      setFeedback("");
+      feedbackTimer.current = null;
+    }, 2000);
+  }
 
   async function handleCopy() {
     try {
       await copyText(text);
-      setFeedback("Content copied.");
+      showFeedback("copied");
     } catch {
-      setFeedback("Copy is unavailable. Select and copy the content manually.");
+      showFeedback("error");
     }
   }
+
+  const announcement = feedback === "copied"
+    ? "Content copied."
+    : feedback === "error"
+      ? "Copy is unavailable. Select and copy the content manually."
+      : "";
 
   return (
     <div className="copy-control">
       <button className="copy-button" type="button" onClick={handleCopy}>
-        <span aria-hidden="true">{feedback === "Content copied." ? "✓" : "▢"}</span>
-        {feedback === "Content copied." ? "Copied" : "Copy content"}
+        <span aria-hidden="true">{feedback === "copied" ? "✓" : feedback === "error" ? "!" : "▢"}</span>
+        {feedback === "copied" ? "Copied" : feedback === "error" ? "Copy failed" : "Copy caption"}
       </button>
-      {feedback && <span className="copy-feedback" role="status">{feedback}</span>}
+      <span className="visually-hidden" role="status" aria-live="polite">{announcement}</span>
     </div>
   );
 }
